@@ -20,6 +20,11 @@ extension UIImage {
     public var template: UIImage {
         return withRenderingMode(.alwaysTemplate)
     }
+    
+    public func compressed(_ quality: Double) -> UIImage? {
+        guard let data = jpegData(compressionQuality: quality) else { return nil }
+        return UIImage(data: data)
+    }
 }
 
 // MARK: - Edit

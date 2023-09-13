@@ -17,6 +17,7 @@ public protocol EditPostViewable: class {
 
 public final class EditPostPresenter {
     let flatFeed: FlatFeed
+    let imageCompression: Double
     let activity: Activity?
     private weak var view: EditPostViewable?
     private var detectedURL: URL?
@@ -36,10 +37,11 @@ public final class EditPostPresenter {
         }
     }
     
-    init(flatFeed: FlatFeed, view: EditPostViewable, activity: Activity? = nil) {
+    init(flatFeed: FlatFeed, view: EditPostViewable, activity: Activity? = nil, imageCompression: Double) {
         self.flatFeed = flatFeed
         self.view = view
         self.activity = activity
+        self.imageCompression = imageCompression
     }
     
     func save(_ text: String?, completion: @escaping (_ error: Error?) -> Void) {
@@ -55,8 +57,20 @@ public final class EditPostPresenter {
         }
     }
     
+    private func compressImages() -> [UIImage] {
+        var compressedImages: [UIImage] = []
+        images.enumerated().forEach { index, image in
+            let compressedImage = image.compressed(imageCompression) ?? images[index]
+            compressedImages.append(compressedImage)
+        }
+        
+        return compressedImages
+    }
+    
     private func saveWithImages(text: String?, completion: @escaping (_ error: Error?) -> Void) {
-        File.files(from: images, process: { File(name: "image\($0)", jpegImage: $1) }) { [weak self] files in
+        let compressedImages: [UIImage] = compressImages()
+        
+        File.files(from: compressedImages, process: { File(name: "image\($0)", jpegImage: $1) }) { [weak self] files in
             Client.shared.upload(images: files) { result in
                 if let imageURLs = try? result.get() {
                     self?.saveActivity(text: text, imageURLs: imageURLs, completion: completion)

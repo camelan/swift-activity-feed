@@ -34,10 +34,12 @@ public struct StreamFeedUIKitIOS {
     }
     
     
-    public static func makeEditPostVC() -> EditPostViewController {
+    public static func makeEditPostVC(imageCompression: Double) -> EditPostViewController {
         guard let userFeedId: FeedId = FeedId(feedSlug: "user") else { return EditPostViewController() }
         let editPostViewController = EditPostViewController.fromBundledStoryboard()
-        editPostViewController.presenter = EditPostPresenter(flatFeed: Client.shared.flatFeed(userFeedId),view: editPostViewController)
+        editPostViewController.presenter = EditPostPresenter(flatFeed: Client.shared.flatFeed(userFeedId),
+            view: editPostViewController,
+            imageCompression: imageCompression)
         editPostViewController.modalPresentationStyle = .fullScreen
         return editPostViewController
     }

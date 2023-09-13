@@ -101,12 +101,13 @@ public final class ActivityFeedViewController: FlatFeedViewController<Activity>,
     }
     
     public override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        let imageCompression: Double = 0.5
          if segue.destination is EditPostViewController,
             let userFeedId = FeedId.user,
             let activity = sender as? Activity {
             let editPostViewController = segue.destination as! EditPostViewController
             editPostViewController.presenter = EditPostPresenter(flatFeed: Client.shared.flatFeed(userFeedId),
-                                                                 view: editPostViewController, activity: activity)
+                                                                 view: editPostViewController, activity: activity, imageCompression: imageCompression)
             return
         }
         
