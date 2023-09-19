@@ -20,8 +20,8 @@ extension URL {
     func getImageID() -> String {
         let pathComponents = self.pathComponents
         guard pathComponents.count > 3 else { return "" }
-        let imageId = pathComponents.last ?? ""
-        
+        // This is required to access the ImageID coming from steam-io image URLs
+        let imageId = pathComponents[3]
         return imageId
     }
 }
