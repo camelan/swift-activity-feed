@@ -16,6 +16,10 @@ open class PostActionsTableViewCell: UITableViewCell, NibReusable {
     @IBOutlet public weak var repostButton: RepostButton!
     @IBOutlet public weak var likeButton: LikeButton!
     
+    var isCurrentUser: Bool = false
+    var autoLikeEnabled: Bool = false
+    var isFromPostDetails: Bool = false
+    var didLike: Bool = false
     var currentActivity: Activity?
     var sharePostAction: ((Activity?) -> Void)?
     
@@ -136,5 +140,13 @@ extension PostActionsTableViewCell {
             }
             
             updateLike(isLiked: presenter.originalActivity.isUserLiked, likesCount: presenter.originalActivity.likesCount, action: action)
+            
+            if autoLikeEnabled && isFromPostDetails && presenter.originalActivity.isUserLiked == false && isCurrentUser == false && didLike == false {
+                didLike = true
+                likeButton.like(presenter.originalActivity, presenter: presenter.reactionPresenter, userTypeOf: userType) { [weak self] _ in
+                    guard let self else { return }
+                    didLike = false
+                }
+            }
     }
 }
