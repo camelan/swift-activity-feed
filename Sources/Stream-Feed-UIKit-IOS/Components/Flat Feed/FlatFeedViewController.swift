@@ -33,6 +33,7 @@ open class FlatFeedViewController<T: ActivityProtocol>: BaseFlatFeedViewControll
     
     let currentUser = Client.shared.currentUser as? User
     public var isCurrentUser: Bool = false
+    public var autoLikeEnabled: Bool = false
     public var localizedNavigationTitle: String = ""
     public var pageSize: Int = 10
     public var reportUserAction: ((String, String) -> Void)?

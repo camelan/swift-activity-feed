@@ -73,7 +73,7 @@ open class DetailViewController<T: ActivityProtocol>: BaseFlatFeedViewController
     public var shareTimeLinePostAction: ((String?) -> Void)?
     
     public var isCurrentUser: Bool = false
-    public var autoLikeEnabled: Bool = true
+    public var autoLikeEnabled: Bool = false
     public var presenter: FlatFeedPresenter<T>?
     
     
@@ -399,8 +399,8 @@ open class DetailViewController<T: ActivityProtocol>: BaseFlatFeedViewController
                 if let cell = cell as? PostActionsTableViewCell {
                     cell.setActivity(with: activityPresenter.originalActivity as! Activity)
                     sharePostAction(cell)
-                    cell.isCurrentUser = self.isCurrentUser
-                    cell.autoLikeEnabled = self.autoLikeEnabled
+                    cell.isCurrentUser = isCurrentUser
+                    cell.autoLikeEnabled = autoLikeEnabled
                     cell.isFromPostDetails = true
                     updateActions(in: cell, activityPresenter: activityPresenter)
                 }

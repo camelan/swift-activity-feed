@@ -10,11 +10,13 @@ public struct StreamFeedUIKitIOS {
                                       isCurrentUser: Bool,
                                       pageSize: Int,
                                       localizedNavigationTitle: String,
+                                      autoLikeEnabled: Bool,
                                       reportUserAction: @escaping ((String, String) -> Void),
                                       shareTimeLinePostAction:  @escaping ((String?) -> Void),
                                       navigateToUserProfileAction: @escaping ((String) -> Void)) -> ActivityFeedViewController {
         let timeLineVC = ActivityFeedViewController.fromBundledStoryboard()
         timeLineVC.isCurrentUser = isCurrentUser
+        timeLineVC.autoLikeEnabled = autoLikeEnabled
         timeLineVC.localizedNavigationTitle = localizedNavigationTitle
         timeLineVC.pageSize = pageSize
         timeLineVC.entryPoint = entryPoint
