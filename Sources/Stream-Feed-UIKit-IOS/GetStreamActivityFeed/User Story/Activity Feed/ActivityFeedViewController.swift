@@ -120,6 +120,7 @@ public final class ActivityFeedViewController: FlatFeedViewController<Activity>,
         activityDetailTableViewController.navigateToUserProfileAction = navigateToUserProfileAction
         activityDetailTableViewController.isCurrentUser = isCurrentUser
         activityDetailTableViewController.presenter = presenter
+        activityDetailTableViewController.autoLikeEnabled = autoLikeEnabled
         activityDetailTableViewController.activityPresenter = activityPresenter
         activityDetailTableViewController.sections = [.activity, .comments]
     }

@@ -10,11 +10,13 @@ public struct StreamFeedUIKitIOS {
                                       isCurrentUser: Bool,
                                       pageSize: Int,
                                       localizedNavigationTitle: String,
+                                      autoLikeEnabled: Bool,
                                       reportUserAction: @escaping ((String, String) -> Void),
                                       shareTimeLinePostAction:  @escaping ((String?) -> Void),
                                       navigateToUserProfileAction: @escaping ((String) -> Void)) -> ActivityFeedViewController {
         let timeLineVC = ActivityFeedViewController.fromBundledStoryboard()
         timeLineVC.isCurrentUser = isCurrentUser
+        timeLineVC.autoLikeEnabled = autoLikeEnabled
         timeLineVC.localizedNavigationTitle = localizedNavigationTitle
         timeLineVC.pageSize = pageSize
         timeLineVC.entryPoint = entryPoint
@@ -46,6 +48,7 @@ public struct StreamFeedUIKitIOS {
     
     public static func makePostDetailsVC(with activityId: String,
                                          currentUserId: String,
+                                         autoLikeEnabled: Bool,
                                          reportUserAction: @escaping ((String, String) -> Void),
                                          shareTimeLinePostAction:  @escaping ((String?) -> Void),
                                          navigateToUserProfileAction: @escaping ((String) -> Void),
@@ -56,7 +59,7 @@ public struct StreamFeedUIKitIOS {
                 let activity = try result.get()
                 let isCurrentUser: Bool = activity.actor.id == currentUserId
                 let activityDetailTableViewController = self.createActivityDetailTableViewController(activity: activity,
-                                                                                                     isCurrentUser: isCurrentUser,
+                                                                                                     isCurrentUser: isCurrentUser,                   autoLikeEnabled: autoLikeEnabled,
                                                                                                      reportUserAction: reportUserAction,
                                                                                                      shareTimeLinePostAction: shareTimeLinePostAction,
                                                                                                      navigateToUserProfileAction: navigateToUserProfileAction)
@@ -68,8 +71,9 @@ public struct StreamFeedUIKitIOS {
     }
     
     private static func createActivityDetailTableViewController(activity: Activity,
-                                                         isCurrentUser: Bool,
-                                                         reportUserAction: @escaping ((String, String) -> Void),
+                                                                isCurrentUser: Bool,
+                                                                autoLikeEnabled: Bool,
+                                                                reportUserAction: @escaping ((String, String) -> Void),
                                                                 shareTimeLinePostAction:  @escaping ((String?) -> Void),
                                                                 navigateToUserProfileAction: @escaping ((String) -> Void)) -> PostDetailTableViewController {
         
@@ -85,6 +89,7 @@ public struct StreamFeedUIKitIOS {
         activityDetailTableViewController.shareTimeLinePostAction = shareTimeLinePostAction
         activityDetailTableViewController.navigateToUserProfileAction = navigateToUserProfileAction
         activityDetailTableViewController.isCurrentUser = isCurrentUser
+        activityDetailTableViewController.autoLikeEnabled = autoLikeEnabled
         activityDetailTableViewController.presenter = flatFeedPresenter
         activityDetailTableViewController.activityPresenter = activityPresenter
         activityDetailTableViewController.sections = [.activity, .comments]
