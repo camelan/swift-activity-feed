@@ -3,7 +3,9 @@ import GetStream
 
 public struct StreamFeedUIKitIOS {
     public static var flatFeed: FlatFeed?
-    
+    private static var flatFeedPresenter: FlatFeedPresenter<Activity>?
+    private static var subscriptionId: SubscriptionId?
+
     public static func makeTimeLineVC(entryPoint: GetStreamFeedEntryPoint = .timeline,
                                       feedSlug: String,
                                       userId: String,
@@ -29,13 +31,13 @@ public struct StreamFeedUIKitIOS {
         let flatFeed = Client.shared.flatFeed(feedSlug: feedSlug, userId: userId)
         let presenter = FlatFeedPresenter<Activity>(flatFeed: flatFeed,
                                                     reactionTypes: [.likes, .comments])
-        
+
         timeLineVC.presenter = presenter
-        
+
         return nav.viewControllers.first as! ActivityFeedViewController
     }
-    
-    
+
+
     public static func makeEditPostVC(imageCompression: Double) -> EditPostViewController {
         guard let userFeedId: FeedId = FeedId(feedSlug: "user") else { return EditPostViewController() }
         let editPostViewController = EditPostViewController.fromBundledStoryboard()
@@ -45,7 +47,7 @@ public struct StreamFeedUIKitIOS {
         editPostViewController.modalPresentationStyle = .fullScreen
         return editPostViewController
     }
-    
+
     public static func makePostDetailsVC(with activityId: String,
                                          currentUserId: String,
                                          autoLikeEnabled: Bool,
@@ -53,12 +55,12 @@ public struct StreamFeedUIKitIOS {
                                          shareTimeLinePostAction:  @escaping ((String?) -> Void),
                                          navigateToUserProfileAction: @escaping ((String) -> Void),
                                          feedLoadingCompletion: @escaping ((Error?) -> Void)) -> PostDetailTableViewController {
-        
+
         let activityDetailTableViewController = PostDetailTableViewController()
         guard let flatFeed = Client.shared.flatFeed(feedSlug: "user") else { return PostDetailTableViewController() }
         let flatFeedPresenter = FlatFeedPresenter<Activity>(flatFeed: flatFeed,
                                                             reactionTypes: [.comments, .likes])
-        
+
         activityDetailTableViewController.reportUserAction = reportUserAction
         activityDetailTableViewController.shareTimeLinePostAction = shareTimeLinePostAction
         activityDetailTableViewController.navigateToUserProfileAction = navigateToUserProfileAction
@@ -68,10 +70,25 @@ public struct StreamFeedUIKitIOS {
         activityDetailTableViewController.activityId = activityId
         activityDetailTableViewController.feedLoadingCompletion = feedLoadingCompletion
         activityDetailTableViewController.sections = [.activity, .comments]
-        
+
         return activityDetailTableViewController
     }
-    
+
+    public static func subscribeForFollowingFeedsUpdates(userId: String, onFollowingFeedsUpdate: @escaping (() -> Void)) {
+        let feedID = FeedId(feedSlug: "following", userId: userId)
+        let flatFeed = FlatFeed(feedID)
+        StreamFeedUIKitIOS.flatFeedPresenter = FlatFeedPresenter<Activity>(flatFeed: flatFeed, reactionTypes: [.comments, .likes])
+
+        StreamFeedUIKitIOS.subscriptionId = StreamFeedUIKitIOS.flatFeedPresenter?.subscriptionPresenter.subscribe({ result in
+            onFollowingFeedsUpdate()
+        })
+
+    }
+
+    public static func unsubscribeFromFeedUpdates() {
+        StreamFeedUIKitIOS.subscriptionId = nil
+    }
+
     public static func loadFollowingFeeds(userId: String, pageSize: Int, completion: @escaping (Result<[Activity], Error>) -> Void) {
         let feedID = FeedId(feedSlug: "following", userId: userId)
         StreamFeedUIKitIOS.flatFeed = FlatFeed(feedID)
@@ -85,7 +102,7 @@ public struct StreamFeedUIKitIOS {
             }
         })
     }
-    
+
     public static func setupStream(apiKey: String, appId: String, region: BaseURL.Location, logsEnabled: Bool = true) {
         if Client.shared.token.isEmpty {
             Client.shared = Client(apiKey: apiKey,
@@ -96,15 +113,15 @@ public struct StreamFeedUIKitIOS {
         Client.config = .init(apiKey: apiKey, appId: appId, baseURL: BaseURL(location: region), logsEnabled: logsEnabled)
         UIFont.overrideInitialize()
     }
-    
-    
+
+
     public static func logOut() {
         Client.shared = Client(apiKey: "", appId: "")
         Client.shared.currentUser = nil
         Client.shared.currentUserId = nil
         Client.shared.token = ""
     }
-    
+
     public static func createUser(userId: String, displayName: String, profileImage: String, completion: @escaping ((Error?) -> Void)) {
         let customUser = User(name: displayName, id: userId, profileImage: profileImage)
         Client.shared.create(user: customUser, getOrCreate: true) { result in
@@ -117,8 +134,8 @@ public struct StreamFeedUIKitIOS {
             }
         }
     }
-    
-    
+
+
     public static func updateUser(userId: String, displayName: String, profileImage: String, completion: @escaping ((Error?) -> Void)) {
         let customUser = User(name: displayName, id: userId, profileImage: profileImage)
         Client.shared.update(user: customUser) { result in
@@ -138,7 +155,7 @@ public struct StreamFeedUIKitIOS {
             }
         }
     }
-    
+
     public static func registerUser(withToken token: String, userId: String, displayName: String, profileImage: String, completion: @escaping ((Error?) -> Void)) {
         let customUser = User(name: displayName, id: userId, profileImage: profileImage)
         Client.shared.setupUser(customUser, token: token) { result in
@@ -155,5 +172,5 @@ public struct StreamFeedUIKitIOS {
             }
         }
     }
-    
+
 }
