@@ -1,5 +1,6 @@
 import UIKit
 import GetStream
+import Kingfisher
 
 public struct StreamFeedUIKitIOS {
     public static var flatFeed: FlatFeed?
@@ -112,6 +113,7 @@ public struct StreamFeedUIKitIOS {
         }
         Client.config = .init(apiKey: apiKey, appId: appId, baseURL: BaseURL(location: region), logsEnabled: logsEnabled)
         UIFont.overrideInitialize()
+        KingfisherManager.shared.downloader.downloadTimeout = 600
     }
 
 

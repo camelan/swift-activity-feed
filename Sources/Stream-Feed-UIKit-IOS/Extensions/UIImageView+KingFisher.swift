@@ -27,6 +27,7 @@ extension UIImageView {
         if isGIF == false {
             imageOptions.insert(.processor(DownsamplingImageProcessor(size: self.frame.size)), at: 0)
         }
+        // Fix for a race condition should be solved by cancel Download Task mentioned here https://github.com/onevcat/Kingfisher/issues/532
         self.kf.cancelDownloadTask()
         self.kf.setImage(with: imageResource, placeholder: placeholder, options: imageOptions) { (result: Result<RetrieveImageResult, KingfisherError>) in
             onComplete?(result)
@@ -46,6 +47,7 @@ extension UIButton {
         if isGIF == false {
             imageOptions.insert(.processor(DownsamplingImageProcessor(size: self.frame.size)), at: 0)
         }
+        self.kf.cancelImageDownloadTask()
         self.kf.setImage(with: url, for: .normal, placeholder: placeholder, options: imageOptions, completionHandler:  { (result: Result<RetrieveImageResult, KingfisherError>) in
             onComplete?(result)
         })
