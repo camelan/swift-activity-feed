@@ -109,6 +109,9 @@ open class FlatFeedViewController<T: ActivityProtocol>: BaseFlatFeedViewControll
                 cell.updateAvatar(with: profilePictureURL)
             }
             cell.setActivity(with: activityPresenter.originalActivity as! Activity)
+            cell.userProfileButton.isUserInteractionEnabled = (entryPoint != .timeline)
+            cell.userProfileButton.isHidden = (entryPoint == .timeline)
+            
             cell.postSettingsTapped = { [weak self] activity in
                 self?.postSettingsAction(activity: activity)
             }

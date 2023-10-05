@@ -14,6 +14,7 @@ import Kingfisher
 open class PostHeaderTableViewCell: BaseTableViewCell {
 
     @IBOutlet public weak var avatarButton: UIButton!
+    @IBOutlet private(set) weak var userProfileButton: UIButton!
     @IBOutlet public weak var nameLabel: UILabel!
     @IBOutlet private weak var repostInfoStackView: UIStackView!
     @IBOutlet private weak var repostInfoLabel: UILabel!
@@ -49,9 +50,8 @@ open class PostHeaderTableViewCell: BaseTableViewCell {
     
     open override func reset() {
         updateAvatar(with: nil)
-        avatarButton.removeTap()
-        avatarButton.isEnabled = true
-        avatarButton.isUserInteractionEnabled = true
+        userProfileButton.isEnabled = true
+        userProfileButton.isUserInteractionEnabled = true
         nameLabel.text = nil
         dateLabel.text = nil
         repostInfoLabel.text = nil
@@ -158,12 +158,6 @@ extension PostHeaderTableViewCell {
     }
     
     public func updateAvatar<T: AvatarRepresentable>(with avatar: T, action: UIControl.Action? = nil) {
-        if let action = action {
-            avatarButton.addTap(action)
-        } else {
-            avatarButton.isUserInteractionEnabled = false
-        }
-        
         if let avatarURL = avatar.avatarURL {
             ImagePipeline.shared.loadImage(with: avatarURL.imageRequest(in: avatarButton), completion:  { [weak self] result in
                 self?.updateAvatar(with: try? result.get().image)
