@@ -10,7 +10,29 @@ import UIKit
 import AVFoundation
 
 extension UIImageView {
-    func loadImage(from imageResource: KF.ImageResource?, placeholder: UIImage? = nil, displayLoader: Bool = true,loaderStyle: UIActivityIndicatorView.Style = .medium, loaderColor: UIColor = .gray, isGIF: Bool = false, onComplete: ((Result<RetrieveImageResult, KingfisherError>) -> Void)? = nil) {
+    func loadImage(from urlString: String?, placeholder: UIImage? = nil, displayLoader: Bool = true,loaderStyle: UIActivityIndicatorView.Style = .medium, loaderColor: UIColor = .gray, isGIF: Bool = false, downSampleSize: CGSize? = nil, onComplete: ((Result<RetrieveImageResult, KingfisherError>) -> Void)? = nil) {
+        guard let url = URL(string: urlString ?? "") else { return }
+        if displayLoader {
+            let customIndicator = KingFisherCustomIndicator()
+            customIndicator.activityIndicatorStyle = loaderStyle
+            customIndicator.activityIndicatorColor = loaderColor
+
+            self.kf.indicatorType = .custom(indicator: customIndicator)
+        }
+        var imageOptions: KingfisherOptionsInfo = [
+            .scaleFactor(UIScreen.main.scale),
+            .transition(.fade(0.2)),
+            .cacheOriginalImage,
+            .loadDiskFileSynchronously]
+        if isGIF == false {
+            imageOptions.insert(.processor(DownsamplingImageProcessor(size: downSampleSize ?? self.frame.size)), at: 0)
+        }
+        self.kf.cancelDownloadTask()
+        self.kf.setImage(with: url, placeholder: placeholder, options: imageOptions) { (result: Result<RetrieveImageResult, KingfisherError>) in
+            onComplete?(result)
+        }
+    }
+    func loadImage(from imageResource: KF.ImageResource?, placeholder: UIImage? = nil, displayLoader: Bool = true,loaderStyle: UIActivityIndicatorView.Style = .medium, loaderColor: UIColor = .gray, isGIF: Bool = false, downSampleSize: CGSize? = nil, onComplete: ((Result<RetrieveImageResult, KingfisherError>) -> Void)? = nil) {
         guard let imageResource = imageResource else { return }
         if displayLoader {
             let customIndicator = KingFisherCustomIndicator()
@@ -25,7 +47,7 @@ extension UIImageView {
             .cacheOriginalImage,
             .loadDiskFileSynchronously]
         if isGIF == false {
-            imageOptions.insert(.processor(DownsamplingImageProcessor(size: self.frame.size)), at: 0)
+            imageOptions.insert(.processor(DownsamplingImageProcessor(size: downSampleSize ?? self.frame.size)), at: 0)
         }
         // Fix for a race condition should be solved by cancel Download Task mentioned here https://github.com/onevcat/Kingfisher/issues/532
         self.kf.cancelDownloadTask()

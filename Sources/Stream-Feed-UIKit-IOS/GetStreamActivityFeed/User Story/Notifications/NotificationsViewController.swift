@@ -131,7 +131,7 @@ extension NotificationsViewController {
                 cell.title(with: title, subtitle: "followed you")
             }
             
-            first.actor.loadAvatar { [weak cell] in cell?.avatarImageView?.image = $0 }
+            cell.avatarImageView.loadImage(from: first.actor.avatarURL?.absoluteString)
             cell.dateLabel.text = item.created.relative
             cell.isUnseen = !item.isSeen
         }

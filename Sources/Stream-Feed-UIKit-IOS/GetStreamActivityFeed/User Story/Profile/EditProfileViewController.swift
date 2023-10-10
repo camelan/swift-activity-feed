@@ -95,9 +95,7 @@ final class EditProfileViewController: UIViewController, BundledStoryboardLoadab
 extension EditProfileViewController {
     
     private func loadAvatar() {
-        user?.loadAvatar { [weak self] image in
-            self?.avatarView.image = image
-        }
+        self.avatarView.imageURL = user?.avatarURL?.absoluteString
     }
     
     @objc func changeAvatar() {
