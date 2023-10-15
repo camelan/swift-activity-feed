@@ -22,6 +22,7 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
     var presenter: EditPostPresenter?
     var entryPoint: EditTimelinePostEntryPoint = .newPost
     var keyboardIsShown: Bool = false
+    var mediaPickerManager: ImagePicker?
     
     @IBOutlet weak var activityIndicatorBarButtonItem: UIBarButtonItem!
     @IBOutlet weak var galleryStackView: UIStackView!
@@ -177,17 +178,34 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
     }
     
     private func addImageAction() {
-            view.endEditing(true)
-            pickImage(title: "Add a photo") { [weak self] info, status, _ in
-                guard let self else { return }
-                if let originalImage = info[.originalImage] as? UIImage {
-                    self.handlePickedImage(image: originalImage)
-                } else if let editedImage = info[.editedImage] as? UIImage {
-                    self.handlePickedImage(image: editedImage)
-                } else if status != .authorized {
-                    print("❌ Photos authorization status: ", status)
-                }
-            }
+        view.endEditing(true)
+        let alert = UIAlertController(title: "Add a photo/video", message: "Select a photo/video source", preferredStyle: .actionSheet)
+        
+        if UIImagePickerController.isSourceTypeAvailable(.photoLibrary) {
+            alert.addAction(UIAlertAction(title: "Photo/Video library", style: .default, handler: { [weak self] _ in
+                self?.presentGalleryMediaPicker()
+            }))
+        }
+        
+        if UIImagePickerController.isSourceTypeAvailable(.camera) {
+            alert.addAction(UIAlertAction(title: "Camera", style: .default, handler: { [weak self] _ in
+                self?.presentCameraMediaPicker()
+            }))
+        }
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in }))
+        
+        present(alert, animated: true)
+    }
+    
+    private func presentGalleryMediaPicker() {
+        mediaPickerManager = ImagePicker(presentationController: self, delegate: self)
+        mediaPickerManager?.openGallery()
+    }
+    
+    private func presentCameraMediaPicker() {
+        mediaPickerManager = ImagePicker(presentationController: self, delegate: self)
+        mediaPickerManager?.openCamera()
     }
     
     private func handlePickedImage(image: UIImage) {
@@ -363,5 +381,10 @@ extension EditPostViewController: UICollectionViewDataSource {
         }
         
         return cell
+    }
+}
+extension EditPostViewController: PHImagePickerDelegate {
+    func didSelect(mediaItems: [MediaItem]) {
+        handlePickedImage(image: mediaItems.first?.image ?? .closeIcon)
     }
 }
