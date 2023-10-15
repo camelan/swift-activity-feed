@@ -475,37 +475,6 @@ extension TextToolBar: UITextViewDelegate {
 
 extension TextToolBar: UICollectionViewDataSource {
     
-    /// Enables the image picking with a given view controller.
-    /// The view controller will be used to present `UIImagePickerController`.
-    public func enableImagePicking(with viewController: UIViewController) {
-        imagePickerButton.isHidden = false
-        
-        imagePickerButton.addTap { [weak self, weak viewController] _ in
-            if let self = self, let viewController = viewController {
-                viewController.view.endEditing(true)
-                self.imagePickerButton.isEnabled = false
-                
-                viewController.pickImage { info, authorizationStatus, removed in
-                    if let image = info[.originalImage] as? UIImage {
-                        self.images.insert(image, at: 0)
-                        self.imagesCollectionView.reloadData()
-                        self.updateTextHeightIfNeeded()
-                    } else if authorizationStatus != .authorized {
-                        print("❌ Photos authorization status: ", authorizationStatus)
-                    }
-                    
-                    if !self.textView.isFirstResponder {
-                        self.textView.becomeFirstResponder()
-                    }
-                    
-                    if authorizationStatus == .authorized || authorizationStatus == .notDetermined {
-                        self.imagePickerButton.isEnabled = true
-                    }
-                }
-            }
-        }
-    }
-    
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return images.count
     }

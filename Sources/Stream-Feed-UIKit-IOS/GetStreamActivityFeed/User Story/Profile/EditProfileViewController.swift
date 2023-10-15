@@ -99,17 +99,5 @@ extension EditProfileViewController {
     }
     
     @objc func changeAvatar() {
-        pickImage(title: "Select your photo", removeTitle: "Remove") { imagePickerInfo, status, removed in
-            if let image = imagePickerInfo[.originalImage] as? UIImage {
-                let image = image.scale(xTimes: 0.5).square()
-                self.avatarView.image = image
-                self.newAvatarImage = image
-            } else if removed {
-                self.avatarView.image = nil
-                self.newAvatarImage = nil
-            } else if status != .authorized {
-                print("❌ Photos authorization status: ", status)
-            }
-        }
     }
 }
