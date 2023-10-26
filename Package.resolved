@@ -140,8 +140,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/camelan/stream-swift",
       "state" : {
-        "revision" : "dc86b0b50d4104d467decec6254e4a116e2bb498",
-        "version" : "1.0.15"
+        "branch" : "feature/CM-5858/Timeline-to-support-video",
+        "revision" : "0533b023ce3978f3fee9ae97fe2d4933dfc35e6c"
       }
     },
     {

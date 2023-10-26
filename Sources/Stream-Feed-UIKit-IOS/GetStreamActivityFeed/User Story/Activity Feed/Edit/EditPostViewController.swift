@@ -63,6 +63,7 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
     
     public override func viewDidLoad() {
         super.viewDidLoad()
+        setButtonText()
         setupUserData()
         setupTextView()
         setupTableView()
@@ -77,7 +78,11 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
         setPostData()
         setupAlertView()
         bind()
-        addImageTextBtn.titleLabel?.text = presenter?.timeLineVideoEnabled ?? false ? "Photo/Video library" : "Photo library"
+    }
+    
+    private func setButtonText() {
+        let buttonTitle = presenter?.timeLineVideoEnabled ?? false ? "Photo/Video library" : "Photo library"
+        addImageTextBtn.setTitle(buttonTitle, for: .normal)
     }
     
     private func bind() {
