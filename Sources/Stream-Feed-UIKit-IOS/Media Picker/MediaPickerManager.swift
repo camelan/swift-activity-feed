@@ -146,7 +146,7 @@ extension MediaPicker: UIImagePickerControllerDelegate, UINavigationControllerDe
         imagePickerViewController.sourceType = .camera
         imagePickerViewController.delegate = self
         let mediaTypes = timelineVideoEnabled ? [UTType.image.identifier, UTType.movie.identifier] : [UTType.image.identifier]
-        imagePickerViewController.mediaTypes = [UTType.image.identifier, UTType.movie.identifier]
+        imagePickerViewController.mediaTypes = mediaTypes
         imagePickerViewController.cameraCaptureMode = .photo
         imagePickerViewController.cameraDevice = .front
         imagePickerViewController.allowsEditing = true
