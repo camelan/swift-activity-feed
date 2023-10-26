@@ -9,6 +9,7 @@
 import UIKit
 import GetStream
 import Nuke
+import Combine
 
 enum EditTimelinePostEntryPoint {
     case editPost
@@ -22,8 +23,12 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
     var presenter: EditPostPresenter?
     var entryPoint: EditTimelinePostEntryPoint = .newPost
     var keyboardIsShown: Bool = false
-    var mediaPickerManager: ImagePicker?
+    var compressedVideosCount = 0
+    var mediaPickerManager: MediaPicker?
     
+    private var bag = Set<AnyCancellable>()
+    let alertView = UIAlertController(title: "", message: "", preferredStyle: .alert)
+    let progressView = UIProgressView()
     @IBOutlet weak var activityIndicatorBarButtonItem: UIBarButtonItem!
     @IBOutlet weak var galleryStackView: UIStackView!
     @IBOutlet weak var uploadImageStackView: UIStackView!
@@ -70,6 +75,68 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
         setupNavigationBarItems()
         topMainView.frame.size.height = tableView.frame.height - galleryStackView.frame.height
         setPostData()
+        setupAlertView()
+        bind()
+        addImageTextBtn.titleLabel?.text = presenter?.timeLineVideoEnabled ?? false ? "Photo/Video library" : "Photo library"
+    }
+    
+    private func bind() {
+        presenter?.videoCompressionSubject
+            .dropFirst()
+            .sink { [weak self] compressionResult in
+                guard let self = self else { return }
+                switch compressionResult {
+                case .onSuccess(_):
+                    self.dismissAlertView()
+                case .onStart:
+                    guard let uploadedVideosItems = presenter?.mediaItems.filter({ $0.mediaType == .video }), uploadedVideosItems.count > 0 else { return }
+                    self.compressedVideosCount += 1
+                    self.showAlertWithProgressView()
+                case .onCancelled, .onFailure(_):
+                    self.dismiss(animated: true)
+                }
+            }
+            .store(in: &bag)
+    }
+    
+    private func showAlertWithProgressView() {
+        guard let uploadedVideosItems = presenter?.mediaItems.filter({ $0.mediaType == .video }), uploadedVideosItems.count > 0 else { return
+        }
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            let progressPrecentage = Float(self.compressedVideosCount) / Float(uploadedVideosItems.count)
+            self.alertView.title = "\("Preparing videos") [\(self.compressedVideosCount)/\(uploadedVideosItems.count)]"
+            self.alertView.message = "\(Int(progressPrecentage * 100))%"
+            self.progressView.setProgress(progressPrecentage, animated: true)
+            guard self.compressedVideosCount == 1 else { return }
+            self.present(self.alertView, animated: true) { [weak self] in
+                guard let self = self else { return }
+                self.setupProgressView()
+                self.alertView.view.addSubview(self.progressView)
+            }
+        }
+    }
+    
+    private func setupAlertView() {
+        let cancel = UIAlertAction(title: "Cancel", style: .cancel) { [weak self] _ in
+            guard let self = self else { return }
+            self.presenter?.compressionCanceled = true
+            self.dismiss(animated: true)
+        }
+        alertView.addAction(cancel)
+    }
+    
+    private func setupProgressView() {
+        let margin: CGFloat = 8.0
+        let rect = CGRect(x: margin, y: 72.0, width: alertView.view.frame.width - margin * 2.0, height: 2.0)
+        progressView.frame = rect
+        progressView.tintColor = view.tintColor
+    }
+    
+    private func dismissAlertView() {
+        DispatchQueue.main.async { [weak self] in
+            self?.alertView.dismiss(animated: true)
+        }
     }
     
     private func setPostData() {
@@ -121,17 +188,19 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
         if entryPoint == .editPost {
             presenter?.updateActivity(with: textView.text)
         } else {
-            presenter?.save(validatedText()) { [weak self] error in
-                guard let self = self else {
-                    return
-                }
-                
-                self.activityIndicator.stopAnimating()
-                
-                if let error = error {
-                    // self.showErrorAlert(error)
-                } else {
-                    backBtnPressed(UIBarButtonItem())
+            Task {
+                await presenter?.save(validatedText()) { [weak self] error in
+                    guard let self = self else {
+                        return
+                    }
+                    
+                    self.activityIndicator.stopAnimating()
+                    
+                    if let error = error {
+                        // self.showErrorAlert(error)
+                    } else {
+                        backBtnPressed(UIBarButtonItem())
+                    }
                 }
             }
         }
@@ -179,18 +248,27 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
     
     private func addImageAction() {
         view.endEditing(true)
-        let alert = UIAlertController(title: "Add a photo/video", message: "Select a photo/video source", preferredStyle: .actionSheet)
+        let timeLineVideoEnabled = presenter?.timeLineVideoEnabled ?? false
+        let alertTitle = timeLineVideoEnabled ? "Add a photo/video" : "Add a photo"
+        let alertBody = timeLineVideoEnabled ? "Select a photo/video source" : "Select a photo source"
+        let actionTitle = timeLineVideoEnabled ? "Photo/Video library" : "Photo library"
+        
+        let alert = UIAlertController(title: alertTitle, message: alertBody, preferredStyle: .actionSheet)
         
         if UIImagePickerController.isSourceTypeAvailable(.photoLibrary) {
-            alert.addAction(UIAlertAction(title: "Photo/Video library", style: .default, handler: { [weak self] _ in
+            alert.addAction(UIAlertAction(title: actionTitle, style: .default, handler: { [weak self] _ in
                 self?.presentGalleryMediaPicker()
             }))
+        } else {
+            presenter?.logErrorAction?("Photo/Video library source is not available.", "")
         }
         
         if UIImagePickerController.isSourceTypeAvailable(.camera) {
             alert.addAction(UIAlertAction(title: "Camera", style: .default, handler: { [weak self] _ in
                 self?.presentCameraMediaPicker()
             }))
+        } else {
+            presenter?.logErrorAction?("Camera source is not available.", "")
         }
         
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in }))
@@ -199,30 +277,42 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
     }
     
     private func presentGalleryMediaPicker() {
-        mediaPickerManager = ImagePicker(presentationController: self, delegate: self)
+        let timelineVideoEnabled = presenter?.timeLineVideoEnabled ?? false
+        let logErrorAction = presenter?.logErrorAction
+        
+        mediaPickerManager = MediaPicker(presentationController: self,
+                                         delegate: self,
+                                         timelineVideoEnabled: timelineVideoEnabled,
+                                         logErrorAction: logErrorAction)
         mediaPickerManager?.openGallery()
     }
     
     private func presentCameraMediaPicker() {
-        mediaPickerManager = ImagePicker(presentationController: self, delegate: self)
+        let timelineVideoEnabled = presenter?.timeLineVideoEnabled ?? false
+        let logErrorAction = presenter?.logErrorAction
+        mediaPickerManager = MediaPicker(presentationController: self,
+                                         delegate: self,
+                                         timelineVideoEnabled: timelineVideoEnabled,
+                                         logErrorAction: logErrorAction)
         mediaPickerManager?.openCamera()
     }
     
-    private func handlePickedImage(image: UIImage) {
-        self.presenter?.images.insert(image, at: 0)
+    private func handlePickedMedia(mediaItems: [MediaItem]) {
+        guard let firstItem = mediaItems.first else { return }
+        self.presenter?.mediaItems.insert(firstItem, at: 0)
         self.updateCollectionView()
         self.checkUploadedImageLimit()
     }
     
     private func checkUploadedImageLimit() {
-        let maximumLimit = self.presenter?.images.count ?? 0 >= 6
+        let maximumLimit = self.presenter?.mediaItems.count ?? 0 >= 6
         self.uploadImageStackView.isUserInteractionEnabled = maximumLimit ? false : true
         self.uploadImageStackView.alpha = maximumLimit ? 0.5 : 1.0
     }
     
-    private func removeImage(at indexPath: IndexPath) {
-        if let presenter = presenter, indexPath.item < presenter.images.count {
-            presenter.images.remove(at: indexPath.item)
+    private func removeSelectedMediaItem(at indexPath: IndexPath) {
+        if let presenter = presenter, indexPath.item < presenter.mediaItems.count {
+            presenter.mediaItems.remove(at: indexPath.item)
             updateCollectionView()
         }
     }
@@ -244,8 +334,8 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
         guard let presenter = presenter else {
             return
         }
-        navigationItem.rightBarButtonItem?.isEnabled = presenter.images.count > 0 || validatedText() != nil
-        navigationItem.rightBarButtonItem?.customView?.alpha = presenter.images.count > 0 || validatedText() != nil ? 1 : 0.5
+        navigationItem.rightBarButtonItem?.isEnabled = presenter.mediaItems.count > 0 || validatedText() != nil
+        navigationItem.rightBarButtonItem?.customView?.alpha = presenter.mediaItems.count > 0 || validatedText() != nil ? 1 : 0.5
     }
 }
 
@@ -348,6 +438,7 @@ extension EditPostViewController: UICollectionViewDataSource {
     private func setupCollectionView() {
         collectionViewHeightConstraint.constant = 0
         collectionView.register(UINib(nibName: "AddingImageCollectionViewCell", bundle: .module), forCellWithReuseIdentifier: "AddingImageCollectionViewCell")
+        collectionView.register(UINib(nibName: "VideoCell", bundle: .module), forCellWithReuseIdentifier: "VideoCell")
         collectionView.dataSource = self
     }
     
@@ -355,7 +446,7 @@ extension EditPostViewController: UICollectionViewDataSource {
         guard let presenter = presenter else {
             return
         }
-        collectionViewHeightConstraint.constant = presenter.images.count > 0 ? AddingImageCollectionViewCell.height : 0
+        collectionViewHeightConstraint.constant = presenter.mediaItems.count > 0 ? AddingImageCollectionViewCell.height : 0
         DispatchQueue.main.async { [weak self] in
             self?.collectionView.reloadData()
             self?.collectionView.layoutIfNeeded()
@@ -364,27 +455,40 @@ extension EditPostViewController: UICollectionViewDataSource {
     }
     
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return presenter?.images.count ?? 0
+        return presenter?.mediaItems.count ?? 0
     }
     
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(for: indexPath) as AddingImageCollectionViewCell
-        guard let selectedImage = presenter?.images[indexPath.item] else {
-            return cell
-        }
-        cell.setImage(image: selectedImage)
-  
-        cell.removeButton.addTap { [weak self] _ in
-            guard let self else { return }
-            self.removeImage(at: indexPath)
-            self.checkUploadedImageLimit()
-        }
+        guard let mediaItem = presenter?.mediaItems[indexPath.item] else { return UICollectionViewCell() }
         
-        return cell
+        switch mediaItem.mediaType {
+        case .image:
+            let imageCell = collectionView.dequeueReusableCell(for: indexPath) as AddingImageCollectionViewCell
+            guard let selectedImage = mediaItem.image else {
+                return imageCell
+            }
+            imageCell.removeButton.addTap { [weak self] _ in
+                guard let self else { return }
+                self.removeSelectedMediaItem(at: indexPath)
+                self.checkUploadedImageLimit()
+            }
+            imageCell.setImage(image: selectedImage)
+            
+            return imageCell
+        case .video:
+            let videoCell = collectionView.dequeueReusableCell(for: indexPath) as VideoCell
+            videoCell.config(streamingURL: mediaItem.videoURL?.absoluteString)
+            videoCell.removeButton.addTap { [weak self] _ in
+                guard let self else { return }
+                self.removeSelectedMediaItem(at: indexPath)
+                self.checkUploadedImageLimit()
+            }
+            return videoCell
+        }
     }
 }
 extension EditPostViewController: PHImagePickerDelegate {
     func didSelect(mediaItems: [MediaItem]) {
-        handlePickedImage(image: mediaItems.first?.image ?? .closeIcon)
+        handlePickedMedia(mediaItems: mediaItems)
     }
 }

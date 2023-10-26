@@ -102,12 +102,19 @@ public final class ActivityFeedViewController: FlatFeedViewController<Activity>,
     
     public override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         let imageCompression: Double = 0.5
+        let videoCompression: Int = 100
+        let timeLineVideoEnabled: Bool = false
          if segue.destination is EditPostViewController,
             let userFeedId = FeedId.user,
             let activity = sender as? Activity {
             let editPostViewController = segue.destination as! EditPostViewController
             editPostViewController.presenter = EditPostPresenter(flatFeed: Client.shared.flatFeed(userFeedId),
-                                                                 view: editPostViewController, activity: activity, imageCompression: imageCompression)
+                                                                 view: editPostViewController,
+                                                                 activity: activity,
+                                                                 imageCompression: imageCompression,
+                                                                 videoCompression: videoCompression,
+                                                                 timeLineVideoEnabled: timeLineVideoEnabled,
+                                                                 logErrorAction: { _,_ in })
             return
         }
         
@@ -118,9 +125,11 @@ public final class ActivityFeedViewController: FlatFeedViewController<Activity>,
         activityDetailTableViewController.reportUserAction = reportUserAction
         activityDetailTableViewController.shareTimeLinePostAction = shareTimeLinePostAction
         activityDetailTableViewController.navigateToUserProfileAction = navigateToUserProfileAction
+        activityDetailTableViewController.logErrorAction = logErrorAction
         activityDetailTableViewController.isCurrentUser = isCurrentUser
         activityDetailTableViewController.presenter = presenter
         activityDetailTableViewController.autoLikeEnabled = autoLikeEnabled
+        activityDetailTableViewController.timelineVideoEnabled = timelineVideoEnabled
         activityDetailTableViewController.activityPresenter = activityPresenter
         activityDetailTableViewController.sections = [.activity, .comments]
     }

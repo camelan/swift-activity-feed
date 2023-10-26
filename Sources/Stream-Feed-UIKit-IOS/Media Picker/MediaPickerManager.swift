@@ -17,22 +17,27 @@ protocol PHImagePickerDelegate: AnyObject {
     func didSelect(mediaItems: [MediaItem])
 }
 
-class ImagePicker: NSObject {
+class MediaPicker: NSObject {
     private let picker: PHPickerViewController
     private weak var presentationController: UIViewController?
     private weak var delegate: PHImagePickerDelegate?
+    let logErrorAction: ((String, String) -> Void)?
     
-    public init(presentationController: UIViewController, delegate: PHImagePickerDelegate) {
+    public init(presentationController: UIViewController,
+                delegate: PHImagePickerDelegate,
+                timelineVideoEnabled: Bool,
+                logErrorAction: ((String, String) -> Void)?) {
         var configuration = PHPickerConfiguration(photoLibrary: PHPhotoLibrary.shared())
-        configuration.filter = .any(of: [.images, .videos])
+        configuration.filter = timelineVideoEnabled ? .any(of: [.images, .videos]) : .images
         configuration.selectionLimit = 1
         configuration.preferredAssetRepresentationMode = .automatic
-        
+        self.logErrorAction = logErrorAction
         picker = PHPickerViewController(configuration: configuration)
         super.init()
         
         self.presentationController = presentationController
         self.delegate = delegate
+        
         picker.delegate = self
     }
     
@@ -41,43 +46,50 @@ class ImagePicker: NSObject {
     }
 }
 
-extension ImagePicker: PHPickerViewControllerDelegate {
+extension MediaPicker: PHPickerViewControllerDelegate {
     
     func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
         var mediaItems: [MediaItem] = []
         guard !results.isEmpty else {
-            picker.dismiss(animated: true, completion: nil)
+            dismiss(picker: picker)
             return
         }
         for result in results {
             let itemProvider = result.itemProvider
             
             if itemProvider.hasItemConformingToTypeIdentifier("public.movie") {
-                getVideo(itemProvider: itemProvider) { result in
+                getVideo(itemProvider: itemProvider) { [weak self] result in
+                    guard let self else { return }
                     do {
                         let pickedVideoURL = try result.get()
-                        let mediaItem = MediaItem(id: UUID().uuidString, mediaType: .video, image: nil, url: pickedVideoURL)
+                        let videoThumbnail = self.getThumbnailImage(forUrl: pickedVideoURL)
+                        let mediaItem = MediaItem(id: UUID().uuidString, mediaType: .video, image: nil, videoURL: pickedVideoURL, videoThumbnail: videoThumbnail)
                         mediaItems.append(mediaItem)
                         self.delegate?.didSelect(mediaItems: mediaItems)
                     }
                     catch {
-                        print("BNBN Video!!")
+                        self.logErrorAction?("[Media Picker] something went wrong when picked video item",
+                                             "error: \(error.localizedDescription)")
                     }
-                    picker.dismiss(animated: true, completion: nil)
+                    dismiss(picker: picker)
                 }
             } else {
                 getMediaImage(itemProvider: itemProvider) { [weak self] result in
                     guard let self else { return }
                     do {
                         let pickedImage = try result.get()
-                        let mediaItem = MediaItem(id: UUID().uuidString, mediaType: .photo, image: pickedImage, url: nil)
+                        let mediaItem = MediaItem(id: UUID().uuidString, mediaType: .image, image: pickedImage, videoURL: nil, videoThumbnail: nil)
                         mediaItems.append(mediaItem)
-                        self.delegate?.didSelect(mediaItems: mediaItems)
+                        DispatchQueue.mainAsyncIfNeeded { [weak self] in
+                            guard let self else { return }
+                            self.delegate?.didSelect(mediaItems: mediaItems)
+                        }
                     } catch {
-                        print("BNBN Image!!")
+                        self.logErrorAction?("[Media Picker] something went wrong when picked image item",
+                                             "error: \(error.localizedDescription)")
                     }
                     
-                    picker.dismiss(animated: true, completion: nil)
+                    dismiss(picker: picker)
                 }
             }
         }
@@ -126,7 +138,7 @@ extension ImagePicker: PHPickerViewControllerDelegate {
     }
 }
 
-extension ImagePicker: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+extension MediaPicker: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     func openCamera() {
         let imagePickerViewController = UIImagePickerController()
         imagePickerViewController.sourceType = .camera
@@ -154,28 +166,59 @@ extension ImagePicker: UIImagePickerControllerDelegate, UINavigationControllerDe
         case UTType.image.identifier:
             // Handle image selection result
             if let editedImage = info[UIImagePickerController.InfoKey.editedImage] as? UIImage {
-                let mediaItem = MediaItem(id: UUID().uuidString, mediaType: .photo, image: editedImage, url: nil)
+                let mediaItem = MediaItem(id: UUID().uuidString, mediaType: .image, image: editedImage, videoURL: nil, videoThumbnail: nil)
                 mediaItems.append(mediaItem)
                 delegate?.didSelect(mediaItems: mediaItems)
             } else if let originalImage = info[UIImagePickerController.InfoKey.originalImage] as? UIImage {
-                let mediaItem = MediaItem(id: UUID().uuidString, mediaType: .photo, image: originalImage, url: nil)
+                let mediaItem = MediaItem(id: UUID().uuidString, mediaType: .image, image: originalImage, videoURL: nil, videoThumbnail: nil)
                 mediaItems.append(mediaItem)
                 delegate?.didSelect(mediaItems: mediaItems)
             }
         case UTType.movie.identifier:
             // Handle video selection result
             if let videoFileURL = info[UIImagePickerController.InfoKey.mediaURL] as? URL {
-                let mediaItem = MediaItem(id: UUID().uuidString, mediaType: .video, image: nil, url: videoFileURL)
+                let videoThumbnail = getThumbnailImage(forUrl: videoFileURL)
+                let mediaItem = MediaItem(id: UUID().uuidString, mediaType: .video, image: nil, videoURL: videoFileURL, videoThumbnail: videoThumbnail)
                 mediaItems.append(mediaItem)
                 delegate?.didSelect(mediaItems: mediaItems)
             }
         default:
-            print("Mismatched type: \(mediaType)")
+            self.logErrorAction?("[Media Picker] Mismatched type",
+                                 "mediaType: \(mediaType)")
         }
-        picker.dismiss(animated: true)
+        dismiss(picker: picker)
     }
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-        picker.dismiss(animated: true)
+        dismiss(picker: picker)
+    }
+}
+
+extension MediaPicker {
+    func getThumbnailImage(forUrl url: URL) -> UIImage? {
+        let asset: AVAsset = AVAsset(url: url)
+        let imageGenerator = AVAssetImageGenerator(asset: asset)
+
+        do {
+            let thumbnailImage = try imageGenerator.copyCGImage(at: CMTimeMake(value: 1, timescale: 60), actualTime: nil)
+            return UIImage(cgImage: thumbnailImage)
+        } catch let error {
+            self.logErrorAction?("[Media Picker] something went wrong while getting thumbnail image",
+                                 "error: \(error.localizedDescription)")
+        }
+
+        return nil
+    }
+    
+    private func dismiss(picker: PHPickerViewController) {
+        DispatchQueue.mainAsyncIfNeeded {
+            picker.dismiss(animated: true, completion: nil)
+        }
+    }
+    
+    private func dismiss(picker: UIImagePickerController) {
+        DispatchQueue.mainAsyncIfNeeded {
+            picker.dismiss(animated: true, completion: nil)
+        }
     }
 }

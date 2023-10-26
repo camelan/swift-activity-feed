@@ -14,24 +14,28 @@ public struct StreamFeedUIKitIOS {
                                       pageSize: Int,
                                       localizedNavigationTitle: String,
                                       autoLikeEnabled: Bool,
+                                      timelineVideoEnabled: Bool,
                                       reportUserAction: @escaping ((String, String) -> Void),
                                       shareTimeLinePostAction:  @escaping ((String?) -> Void),
-                                      navigateToUserProfileAction: @escaping ((String) -> Void)) -> ActivityFeedViewController {
+                                      navigateToUserProfileAction: @escaping ((String) -> Void),
+                                      logErrorAction: @escaping ((String, String) -> Void)) -> ActivityFeedViewController {
         let timeLineVC = ActivityFeedViewController.fromBundledStoryboard()
         timeLineVC.isCurrentUser = isCurrentUser
         timeLineVC.autoLikeEnabled = autoLikeEnabled
+        timeLineVC.timelineVideoEnabled = timelineVideoEnabled
         timeLineVC.localizedNavigationTitle = localizedNavigationTitle
         timeLineVC.pageSize = pageSize
         timeLineVC.entryPoint = entryPoint
         timeLineVC.reportUserAction = reportUserAction
         timeLineVC.shareTimeLinePostAction = shareTimeLinePostAction
         timeLineVC.navigateToUserProfileAction = navigateToUserProfileAction
+        timeLineVC.logErrorAction = logErrorAction
         timeLineVC.modalPresentationStyle = .fullScreen
         let nav = UINavigationController(rootViewController: timeLineVC)
         nav.modalPresentationStyle = .fullScreen
         let flatFeed = Client.shared.flatFeed(feedSlug: feedSlug, userId: userId)
         let presenter = FlatFeedPresenter<Activity>(flatFeed: flatFeed,
-                                                    reactionTypes: [.likes, .comments])
+                                                    reactionTypes: [.likes, .comments], timelineVideoEnabled: timelineVideoEnabled)
 
         timeLineVC.presenter = presenter
 
@@ -39,12 +43,18 @@ public struct StreamFeedUIKitIOS {
     }
 
 
-    public static func makeEditPostVC(imageCompression: Double) -> EditPostViewController {
+    public static func makeEditPostVC(imageCompression: Double,
+                                      videoCompression: Int,
+                                      timeLineVideoEnabled: Bool,
+                                      logErrorAction: @escaping ((String, String) -> Void)) -> EditPostViewController {
         guard let userFeedId: FeedId = FeedId(feedSlug: "user") else { return EditPostViewController() }
         let editPostViewController = EditPostViewController.fromBundledStoryboard()
         editPostViewController.presenter = EditPostPresenter(flatFeed: Client.shared.flatFeed(userFeedId),
-            view: editPostViewController,
-            imageCompression: imageCompression)
+                                                             view: editPostViewController,
+                                                             imageCompression: imageCompression,
+                                                             videoCompression: videoCompression,
+                                                             timeLineVideoEnabled: timeLineVideoEnabled,
+                                                             logErrorAction: logErrorAction)
         editPostViewController.modalPresentationStyle = .fullScreen
         return editPostViewController
     }
@@ -52,10 +62,12 @@ public struct StreamFeedUIKitIOS {
     public static func makePostDetailsVC(with activityId: String,
                                          currentUserId: String,
                                          autoLikeEnabled: Bool,
+                                         timelineVideoEnabled: Bool,
                                          reportUserAction: @escaping ((String, String) -> Void),
                                          shareTimeLinePostAction:  @escaping ((String?) -> Void),
                                          navigateToUserProfileAction: @escaping ((String) -> Void),
-                                         feedLoadingCompletion: @escaping ((Error?) -> Void)) -> PostDetailTableViewController {
+                                         feedLoadingCompletion: @escaping ((Error?) -> Void),
+                                         logErrorAction: @escaping ((String, String) -> Void)) -> PostDetailTableViewController {
 
         let activityDetailTableViewController = PostDetailTableViewController()
         guard let flatFeed = Client.shared.flatFeed(feedSlug: "user") else { return PostDetailTableViewController() }
@@ -65,7 +77,9 @@ public struct StreamFeedUIKitIOS {
         activityDetailTableViewController.reportUserAction = reportUserAction
         activityDetailTableViewController.shareTimeLinePostAction = shareTimeLinePostAction
         activityDetailTableViewController.navigateToUserProfileAction = navigateToUserProfileAction
+        activityDetailTableViewController.logErrorAction = logErrorAction
         activityDetailTableViewController.autoLikeEnabled = autoLikeEnabled
+        activityDetailTableViewController.timelineVideoEnabled = timelineVideoEnabled
         activityDetailTableViewController.presenter = flatFeedPresenter
         activityDetailTableViewController.currentUserId = currentUserId
         activityDetailTableViewController.activityId = activityId
