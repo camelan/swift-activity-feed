@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="22155" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22131"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="MediaImageCell" id="Nz0-cX-v4p" customClass="MediaImageCell" customModule="GetStreamActivityFeed">
+            <rect key="frame" x="0.0" y="0.0" width="262" height="305"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
+                <rect key="frame" x="0.0" y="0.0" width="262" height="305"/>
+                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                <subviews>
+                    <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Paq-tI-cur" customClass="PanZoomImageView" customModule="GetStreamActivityFeed">
+                        <rect key="frame" x="0.0" y="0.0" width="262" height="305"/>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    </scrollView>
+                    <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uz6-LP-PfC">
+                        <rect key="frame" x="0.0" y="0.0" width="262" height="305"/>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                        <state key="normal" image="reload-icon"/>
+                        <connections>
+                            <action selector="reloadTapped:" destination="Nz0-cX-v4p" eventType="touchUpInside" id="uq3-uV-GaX"/>
+                        </connections>
+                    </button>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="TPO-xP-W4y">
+                        <rect key="frame" x="20" y="75" width="30" height="30"/>
+                        <color key="backgroundColor" name="White"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="30" id="Sy4-4G-iVM"/>
+                            <constraint firstAttribute="height" constant="30" id="ctu-yi-qWP"/>
+                        </constraints>
+                        <color key="tintColor" name="White"/>
+                        <state key="normal" image="close">
+                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        </state>
+                        <userDefinedRuntimeAttributes>
+                            <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                                <real key="value" value="15"/>
+                            </userDefinedRuntimeAttribute>
+                        </userDefinedRuntimeAttributes>
+                        <connections>
+                            <action selector="closeAction:" destination="Nz0-cX-v4p" eventType="touchUpInside" id="D8j-Kw-PXZ"/>
+                        </connections>
+                    </button>
+                    <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Wad-46-Ag0">
+                        <rect key="frame" x="212" y="75" width="30" height="30"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="30" id="Y5d-QZ-OD3"/>
+                            <constraint firstAttribute="width" constant="30" id="fW6-cI-62x"/>
+                        </constraints>
+                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <state key="normal" image="options-white">
+                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        </state>
+                        <userDefinedRuntimeAttributes>
+                            <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                                <real key="value" value="15"/>
+                            </userDefinedRuntimeAttribute>
+                        </userDefinedRuntimeAttributes>
+                        <connections>
+                            <action selector="optionsTapped:" destination="Nz0-cX-v4p" eventType="touchUpInside" id="fso-wz-l6O"/>
+                        </connections>
+                    </button>
+                </subviews>
+            </view>
+            <viewLayoutGuide key="safeArea" id="L9C-Pb-kq4"/>
+            <constraints>
+                <constraint firstItem="uz6-LP-PfC" firstAttribute="top" secondItem="Nz0-cX-v4p" secondAttribute="top" id="3WX-Ka-9tq"/>
+                <constraint firstItem="Wad-46-Ag0" firstAttribute="top" secondItem="Nz0-cX-v4p" secondAttribute="topMargin" constant="16" id="QQp-lB-uJr"/>
+                <constraint firstItem="Paq-tI-cur" firstAttribute="top" secondItem="Nz0-cX-v4p" secondAttribute="top" id="WVP-PZ-eCo"/>
+                <constraint firstItem="uz6-LP-PfC" firstAttribute="leading" secondItem="Nz0-cX-v4p" secondAttribute="leading" id="Y22-uB-vHG"/>
+                <constraint firstAttribute="trailing" secondItem="uz6-LP-PfC" secondAttribute="trailing" id="e3G-kT-Wjx"/>
+                <constraint firstAttribute="trailing" secondItem="Paq-tI-cur" secondAttribute="trailing" id="eYc-G8-TKN"/>
+                <constraint firstItem="TPO-xP-W4y" firstAttribute="leading" secondItem="Nz0-cX-v4p" secondAttribute="leading" constant="20" id="gfm-1S-uLa"/>
+                <constraint firstItem="TPO-xP-W4y" firstAttribute="top" secondItem="Nz0-cX-v4p" secondAttribute="topMargin" constant="16" id="j5k-fl-PIz"/>
+                <constraint firstAttribute="trailing" secondItem="Wad-46-Ag0" secondAttribute="trailing" constant="20" id="n4O-Dc-rd2"/>
+                <constraint firstAttribute="bottom" secondItem="uz6-LP-PfC" secondAttribute="bottom" id="uKV-8w-Wdn"/>
+                <constraint firstAttribute="bottom" secondItem="Paq-tI-cur" secondAttribute="bottom" id="w6d-93-25n"/>
+                <constraint firstItem="Paq-tI-cur" firstAttribute="leading" secondItem="Nz0-cX-v4p" secondAttribute="leading" id="zcf-ML-Ymr"/>
+            </constraints>
+            <size key="customSize" width="262" height="305"/>
+            <connections>
+                <outlet property="closeButton" destination="TPO-xP-W4y" id="Mud-cD-zRI"/>
+                <outlet property="optionsButton" destination="Wad-46-Ag0" id="HiP-Xj-lsf"/>
+                <outlet property="reloadButton" destination="uz6-LP-PfC" id="6uW-ym-IPS"/>
+                <outlet property="scrollImg" destination="Paq-tI-cur" id="Lhv-Rw-ccI"/>
+            </connections>
+            <point key="canvasLocation" x="169.56521739130437" y="179.12946428571428"/>
+        </collectionViewCell>
+    </objects>
+    <resources>
+        <image name="close" width="14" height="14"/>
+        <image name="options-white" width="20.333333969116211" height="4"/>
+        <image name="reload-icon" width="50" height="50"/>
+        <namedColor name="White">
+            <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>

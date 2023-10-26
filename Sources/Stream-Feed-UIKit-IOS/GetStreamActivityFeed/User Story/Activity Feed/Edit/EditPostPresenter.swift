@@ -9,8 +9,9 @@
 import Foundation
 import GetStream
 import UIKit
+import Combine
 
-public protocol EditPostViewable: class {
+public protocol EditPostViewable: AnyObject {
     func underlineLinks(with dataDetectorURLItems: [DataDetectorURLItem])
     func updateOpenGraphData()
 }
@@ -18,17 +19,25 @@ public protocol EditPostViewable: class {
 public final class EditPostPresenter {
     let flatFeed: FlatFeed
     let imageCompression: Double
+    let videoCompression: Int
+    let timeLineVideoEnabled: Bool
+    let logErrorAction: ((String, String) -> Void)?
     let activity: Activity?
     private weak var view: EditPostViewable?
     private var detectedURL: URL?
     private(set) var ogData: OGResponse?
     var petId: String?
     var images: [UIImage] = []
-    
+    var videoCompressorManager: VideoCompressorService = VideoCompressorManager()
+    var videoCompressionSubject = CurrentValueSubject<CompressionResult, Never>(CompressionResult.onStart)
+    var compressionCanceled = false
+
+    var mediaItems: [MediaItem] = []
+
     private(set) lazy var dataDetectorWorker: DataDetectorWorker? = try? DataDetectorWorker(types: .link) { [weak self]  in
         self?.updateOpenGraph($0)
     }
-    
+
     private(set) lazy var openGraphWorker = OpenGraphWorker() { [weak self] url, openGraphData, error in
         if let self = self, error == nil {
             self.detectedURL = url
@@ -36,65 +45,196 @@ public final class EditPostPresenter {
             self.view?.updateOpenGraphData()
         }
     }
-    
-    init(flatFeed: FlatFeed, view: EditPostViewable, activity: Activity? = nil, imageCompression: Double, petId: String?) {
+
+    init(flatFeed: FlatFeed,
+         view: EditPostViewable,
+         activity: Activity? = nil,
+         petId: String?,
+         imageCompression: Double,
+         videoCompression: Int,
+         timeLineVideoEnabled: Bool,
+         logErrorAction: @escaping ((String, String) -> Void)) {
         self.flatFeed = flatFeed
         self.view = view
         self.activity = activity
         self.imageCompression = imageCompression
         self.petId = petId
+        self.videoCompression = videoCompression
+        self.timeLineVideoEnabled = timeLineVideoEnabled
+        self.logErrorAction = logErrorAction
     }
-    
-    func save(_ text: String?, completion: @escaping (_ error: Error?) -> Void) {
+
+    func save(_ text: String?, completion: @escaping (_ error: Error?) -> Void) async {
         guard Client.shared.currentUser != nil else {
+            logErrorAction?("found nil user while posting new feed", "")
             completion(nil)
             return
         }
-        
-        if images.count > 0 {
-            saveWithImages(text: text, completion: completion)
+        let hasMediaItems = mediaItems.count > 0
+
+        if hasMediaItems {
+            let videoItems = mediaItems.filter({ $0.mediaType == .video })
+            guard videoItems.count > 0 else {
+                await saveWithMediaItems(text: text, completion: completion)
+                return
+            }
+            handleVideosCompression(videoItems: videoItems, text: text, completion: completion)
         } else {
             saveActivity(text: text, completion: completion)
         }
     }
-    
-    private func compressImages() -> [UIImage] {
-        var compressedImages: [UIImage] = []
-        images.enumerated().forEach { index, image in
-            let compressedImage = image.compressed(imageCompression) ?? images[index]
-            compressedImages.append(compressedImage)
+
+    private func saveWithMediaItems(text: String?, completion: @escaping (_ error: Error?) -> Void) async {
+        let mediaFiles = prepareMediaFiles()
+        let videoThumbnailFiles = prepareThumbnailFiles()
+        do {
+            // Upload videoThumbnailFiles
+            if !videoThumbnailFiles.isEmpty {
+                let thumbnailURLs = try await uploadFilesAsync(files: videoThumbnailFiles)
+                updateMediaItemsWithThumbnailURLs(thumbnailURLs)
+            }
+
+
+            // Upload other mediaFiles.
+            let mediaURLs = try await uploadFilesAsync(files: mediaFiles)
+            mediaItems = updateMediaItemsWithMediaURLs(mediaURLs)
+
+            saveActivity(text: text, completion: completion)
+        } catch let error {
+            logErrorAction?("Something went wrong while saving meida items", error.localizedDescription)
+            completion(error)
         }
-        
-        return compressedImages
     }
-    
-    private func saveWithImages(text: String?, completion: @escaping (_ error: Error?) -> Void) {
-        let compressedImages: [UIImage] = compressImages()
-        
-        File.files(from: compressedImages, process: { File(name: "image\($0)", jpegImage: $1) }) { [weak self] files in
-            Client.shared.upload(images: files) { result in
-                if let imageURLs = try? result.get() {
-                    self?.saveActivity(text: text, imageURLs: imageURLs, completion: completion)
-                } else if let error = result.error {
-                    completion(error)
+
+    private func uploadFilesAsync(files: [File]) async throws -> [URL] {
+        return try await withCheckedThrowingContinuation { continuation in
+            Client.shared.upload(files: files) { result in
+                switch result {
+                case .success(let urls):
+                    continuation.resume(returning: urls)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
                 }
             }
         }
     }
-    
-    private func saveActivity(text: String?, imageURLs: [URL] = [], completion: @escaping (_ error: Error?) -> Void) {
-        guard let user = Client.shared.currentUser as? User , (text != nil || imageURLs.count > 0) else {
+
+    private func updateMediaItemsWithThumbnailURLs(_ thumbnailURLs: [URL]) {
+        let videoItems = mediaItems.filter { $0.mediaType == .video }
+
+        videoItems.enumerated().forEach { index, videoItem in
+            guard let mediaItemindex = mediaItems.firstIndex(where: { $0.id == videoItem.id }) else { return }
+            mediaItems[mediaItemindex].uploadedVideoThumbnailURL = thumbnailURLs[index]
+        }
+    }
+
+    private func updateMediaItemsWithMediaURLs(_ mediaURLs: [URL]) -> [MediaItem] {
+        return mediaItems.enumerated().map { index, mediaItem in
+            var updatedMediaItem = mediaItem
+
+            switch updatedMediaItem.mediaType {
+            case .image:
+                updatedMediaItem.uploadedImageURL = mediaURLs[index]
+            case .video:
+                updatedMediaItem.uploadedVideoURL = mediaURLs[index]
+            }
+            return updatedMediaItem
+        }
+    }
+
+    private func prepareThumbnailFiles() -> [File] {
+        let videoItems = mediaItems.filter { $0.mediaType == .video }
+        let files: [File] = videoItems.enumerated().compactMap { index, mediaItem in
+            if let compressedThumbnail = mediaItem.videoThumbnail?.compressed(imageCompression) {
+                return File(name: "thumbnail\(index)", jpegImage: compressedThumbnail)
+            }
+            return nil
+        }
+        return files
+    }
+
+    private func prepareMediaFiles() -> [File] {
+        // Sort the media list such that photos appear before videos.
+        let sortedMediaItems = mediaItems.sorted { $0.mediaType.rawValue < $1.mediaType.rawValue }
+        mediaItems = sortedMediaItems
+
+        let files: [File] = sortedMediaItems.enumerated().compactMap { index, mediaItem in
+            switch mediaItem.mediaType {
+            case .image:
+                if let compressedImage = mediaItem.image?.compressed(imageCompression) {
+                    return File(name: "image\(index)", jpegImage: compressedImage)
+                }
+            case .video:
+                if let videoURL = mediaItem.videoURL {
+                    return File(name: "video\(videoURL.lastPathComponent)", videoURL: videoURL)
+                }
+            }
+            return nil
+        }
+
+        return files
+    }
+
+    private func handleVideosCompression(videoItems: [MediaItem], text: String?, completion: @escaping (_ error: Error?) -> Void) {
+        let group = DispatchGroup()
+         DispatchQueue.global().async { [weak self] in
+            guard let self = self else { return }
+             videoItems.forEach { mediaItem in
+                group.enter()
+                if let videoURL = mediaItem.videoURL {
+                    self.videoCompressorManager.compressVideoURL(videoURL: videoURL, compressionPrecentage: self.videoCompression) { [weak self]  compressionResult in
+                        guard let self = self else { return }
+                        switch compressionResult {
+                        case .onStart:
+                            self.videoCompressionSubject.send(.onStart)
+                        case .onSuccess(let uRL):
+                            let index = self.mediaItems.firstIndex(where: { $0.id == mediaItem.id }) ?? 0
+                            self.mediaItems[index].videoURL = uRL
+                            group.leave()
+                        case let .onFailure(error):
+                            logErrorAction?("[Multimedia] something went wrong with timeline video compression", error.localizedDescription)
+                            self.videoCompressionSubject.send(.onFailure(error))
+                            group.leave()
+                        case .onCancelled:
+                            self.videoCompressionSubject.send(.onCancelled)
+                            group.leave()
+                        }
+                    }
+                }
+                group.wait()
+            }
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                if !self.compressionCanceled {
+                    Task {
+                        await self.saveWithMediaItems(text: text, completion: completion)
+                    }
+                }
+                 self.videoCompressionSubject.send(.onSuccess(videoItems[0].videoURL!))
+            }
+        }
+    }
+
+    private func saveActivity(text: String?, completion: @escaping (_ error: Error?) -> Void) {
+        guard let user = Client.shared.currentUser as? User , (text != nil || mediaItems.count > 0) else {
             completion(nil)
             return
         }
-        
+
         let activity: Activity
         let attachment = ActivityAttachment()
-        var imageURLs = imageURLs
-      
-        if let imageURL = imageURLs.first {
-            imageURLs.removeFirst()
-            activity = Activity(actor: user, verb: .post, object: .image(imageURL))
+        var tempMediaItems = mediaItems
+
+        if let tempMediaItem = tempMediaItems.first {
+            switch tempMediaItem.mediaType {
+            case .image:
+                guard let imageURL = tempMediaItem.uploadedImageURL else { return }
+                activity = Activity(actor: user, verb: .post, object: .image(imageURL))
+            case .video:
+                guard let thumnnailURL = tempMediaItem.uploadedVideoThumbnailURL else { return }
+                activity = Activity(actor: user, verb: .post, object: .image(thumnnailURL))
+            }
+            tempMediaItems.removeFirst()
             activity.text = text
         } else if let text = text {
             activity = Activity(actor: user, verb: .post, object: .text(text))
@@ -102,58 +242,53 @@ public final class EditPostPresenter {
             completion(nil)
             return
         }
-        
-        if imageURLs.count > 0 {
-            attachment.imageURLs = imageURLs
+
+        if mediaItems.count > 0 {
+            activity.media = mediaItems.map({ $0.uploadedMediaItem })
+            attachment.imageURLs = tempMediaItems.map({ mediaItem in
+                switch mediaItem.mediaType {
+                case .image:
+                    return mediaItem.uploadedImageURL!
+                case .video:
+                    return mediaItem.uploadedVideoThumbnailURL!
+                }
+            })
             activity.attachment = attachment
         }
-        
+
         if let ogData = ogData {
             attachment.openGraphData = ogData
             activity.attachment = attachment
         }
-        
+
         if let petId = petId {
             activity.petId = petId
         }
-        
-        flatFeed.add(activity) { completion($0.error) }
+
+        flatFeed.add(activity) { [weak self] result in
+            do {
+                _ = try result.get()
+                completion(nil)
+            } catch let error {
+                self?.logErrorAction?("Something went wrong with save activity", error.localizedDescription)
+                completion(error)
+            }
+        }
     }
-    
-    
-    
+
+
+
     func updateActivity(with text: String) {
-//        guard let updatedActivity = activity else { return }
-//        let activity = Activity(actor: updatedActivity.actor, verb: updatedActivity.verb, object: .text(text), foreignId: updatedActivity.foreignId, time: updatedActivity.time, feedIds: updatedActivity.feedIds, originFeedId: updatedActivity.originFeedId)
-//        activity.id = updatedActivity.id
-//
-//        Client.shared.update(activities: [updatedActivity]) { result in
-//            do {
-//                let x = try result.get()
-//                dump("BNBN \(x)")
-//            } catch {
-//                print("BNBN Error \(error.localizedDescription)")
-//            }
-//        }
-//        let properties = Properties()
-//        Client.shared.updateActivity(typeOf: Activity.self, setProperties: properties, activityId: updatedActivity.id) { result in
-//            do {
-//                let x = try result.get()
-//                dump("BNBN2 \(x)")
-//            } catch {
-//                print("BNBN2 Error \(error.localizedDescription)")
-//            }
-//        }
     }
-    
-    
-    
+
+
+
 }
 
 extension EditPostPresenter {
     private func updateOpenGraph(_ dataDetectorURLItems: [DataDetectorURLItem]) {
         view?.underlineLinks(with: dataDetectorURLItems)
-        
+
         guard let item = dataDetectorURLItems.first(where: { !openGraphWorker.isBadURL($0.url) }) else {
             detectedURL = nil
             ogData = nil
@@ -161,11 +296,11 @@ extension EditPostPresenter {
             view?.updateOpenGraphData()
             return
         }
-        
+
         if let detectedURL = detectedURL, detectedURL == item.url {
             return
         }
-        
+
         detectedURL = nil
         ogData = nil
         view?.updateOpenGraphData()

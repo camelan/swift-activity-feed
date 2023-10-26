@@ -37,6 +37,7 @@ public struct ActivityPresenter<T: ActivityProtocol> {
     public let reactionPresenter: ReactionPresenter
     /// Reaction types for the handling.
     public var reactionTypes: ActivityPresenterReactionTypes = []
+    var timelineVideoEnabled: Bool
     
     /// An original activity, if the object is type of `ActivityObject`.
     /// If the activity is a result of a repost, this property will contains the original activity.
@@ -56,10 +57,14 @@ public struct ActivityPresenter<T: ActivityProtocol> {
     }
     
     /// Creates an activity presenter for an activity with a reaction presenter.
-    public init(activity: T, reactionPresenter: ReactionPresenter, reactionTypes: ActivityPresenterReactionTypes = []) {
+    public init(activity: T,
+                reactionPresenter: ReactionPresenter,
+                reactionTypes: ActivityPresenterReactionTypes = [],
+                timelineVideoEnabled: Bool) {
         self.activity = activity
         self.reactionPresenter = reactionPresenter
         self.reactionTypes = reactionTypes
+        self.timelineVideoEnabled = timelineVideoEnabled
     }
     
     /// Creates a reaction paginator based on the activity id and a reaction kind.
@@ -75,7 +80,7 @@ public struct ActivityPresenter<T: ActivityProtocol> {
 /// Activity Presenter table view cells data
 public enum ActivityPresenterCellType {
     case activity
-    case attachmentImages(_ urls: [URL])
+    case attachmentImages(_ mediaItems: [UploadedMediaItem])
     case attachmentOpenGraphData(_ ogData: OGResponse)
     case actions
     case separator
@@ -88,7 +93,7 @@ extension ActivityPresenter {
         var count = 2 + (withReactions ? 1 : 0)
         
         if let originalActivityAttachment = originalActivityAttachment {
-            if originalActivityAttachment.attachmentImageURLs() != nil {
+            if originalActivityAttachment.attachmentImageURLs(timelineVideoEnabled: timelineVideoEnabled) != nil {
                 count += 1
             }
             
@@ -109,16 +114,16 @@ extension ActivityPresenter {
         case 0:
             return .activity
         case (cellsCount - 3 - reactionsCellCount):
-            if let urls = originalActivityAttachment?.attachmentImageURLs() {
-                return .attachmentImages(urls)
+            if let mediaItems = originalActivityAttachment?.attachmentImageURLs(timelineVideoEnabled: timelineVideoEnabled) {
+                return .attachmentImages(mediaItems)
             }
         case (cellsCount - 2 - reactionsCellCount):
             if let ogData = originalActivityAttachment?.ogData {
                 return .attachmentOpenGraphData(ogData)
             }
             
-            if let urls = originalActivityAttachment?.attachmentImageURLs() {
-                return .attachmentImages(urls)
+            if let mediaItems = originalActivityAttachment?.attachmentImageURLs(timelineVideoEnabled: timelineVideoEnabled) {
+                return .attachmentImages(mediaItems)
             }
         case (cellsCount - 2) where reactionsCellCount > 0:
             return .actions
