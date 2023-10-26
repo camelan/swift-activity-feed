@@ -22,6 +22,7 @@ class MediaPicker: NSObject {
     private weak var presentationController: UIViewController?
     private weak var delegate: PHImagePickerDelegate?
     let logErrorAction: ((String, String) -> Void)?
+    var timelineVideoEnabled: Bool
     
     public init(presentationController: UIViewController,
                 delegate: PHImagePickerDelegate,
@@ -32,6 +33,7 @@ class MediaPicker: NSObject {
         configuration.selectionLimit = 1
         configuration.preferredAssetRepresentationMode = .automatic
         self.logErrorAction = logErrorAction
+        self.timelineVideoEnabled = timelineVideoEnabled
         picker = PHPickerViewController(configuration: configuration)
         super.init()
         
@@ -143,6 +145,7 @@ extension MediaPicker: UIImagePickerControllerDelegate, UINavigationControllerDe
         let imagePickerViewController = UIImagePickerController()
         imagePickerViewController.sourceType = .camera
         imagePickerViewController.delegate = self
+        let mediaTypes = timelineVideoEnabled ? [UTType.image.identifier, UTType.movie.identifier] : [UTType.image.identifier]
         imagePickerViewController.mediaTypes = [UTType.image.identifier, UTType.movie.identifier]
         imagePickerViewController.cameraCaptureMode = .photo
         imagePickerViewController.cameraDevice = .front
