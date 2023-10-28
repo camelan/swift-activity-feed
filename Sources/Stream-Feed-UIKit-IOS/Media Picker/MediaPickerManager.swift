@@ -23,6 +23,7 @@ class MediaPicker: NSObject {
     private weak var delegate: PHImagePickerDelegate?
     let logErrorAction: ((String, String) -> Void)?
     var timelineVideoEnabled: Bool
+    var videoMaximumDurationInMinutes: Double = 2.0
     
     public init(presentationController: UIViewController,
                 delegate: PHImagePickerDelegate,
@@ -64,6 +65,13 @@ extension MediaPicker: PHPickerViewControllerDelegate {
                     guard let self else { return }
                     do {
                         let pickedVideoURL = try result.get()
+                        guard isVideoDurationValid(pickedVideoURL: pickedVideoURL) else {
+                            self.logErrorAction?("Error: Picked video duration exceeds the maximum allowed duration.",
+                                                 "picked video duration: \(getVideoDuration(forUrl: pickedVideoURL)) seconds")
+                            dismiss(picker: picker)
+                            return
+                        }
+                        
                         let videoThumbnail = self.getThumbnailImage(forUrl: pickedVideoURL)
                         let mediaItem = MediaItem(id: UUID().uuidString, mediaType: .video, image: nil, videoURL: pickedVideoURL, videoThumbnail: videoThumbnail)
                         mediaItems.append(mediaItem)
@@ -150,6 +158,7 @@ extension MediaPicker: UIImagePickerControllerDelegate, UINavigationControllerDe
         imagePickerViewController.cameraCaptureMode = .photo
         imagePickerViewController.cameraDevice = .front
         imagePickerViewController.allowsEditing = true
+        imagePickerViewController.videoMaximumDuration = videoMaximumDurationInMinutes * 60
             
         if UIImagePickerController.isFlashAvailable(for: .front) {
             imagePickerViewController.cameraFlashMode = .on
@@ -180,6 +189,13 @@ extension MediaPicker: UIImagePickerControllerDelegate, UINavigationControllerDe
         case UTType.movie.identifier:
             // Handle video selection result
             if let videoFileURL = info[UIImagePickerController.InfoKey.mediaURL] as? URL {
+                guard isVideoDurationValid(pickedVideoURL: videoFileURL) else {
+                    self.logErrorAction?("Error: Picked video duration exceeds the maximum allowed duration.",
+                                         "picked video duration: \(getVideoDuration(forUrl: videoFileURL)) seconds")
+                    dismiss(picker: picker)
+                    return
+                }
+                
                 let videoThumbnail = getThumbnailImage(forUrl: videoFileURL)
                 let mediaItem = MediaItem(id: UUID().uuidString, mediaType: .video, image: nil, videoURL: videoFileURL, videoThumbnail: videoThumbnail)
                 mediaItems.append(mediaItem)
@@ -198,10 +214,10 @@ extension MediaPicker: UIImagePickerControllerDelegate, UINavigationControllerDe
 }
 
 extension MediaPicker {
-    func getThumbnailImage(forUrl url: URL) -> UIImage? {
+    private func getThumbnailImage(forUrl url: URL) -> UIImage? {
         let asset: AVAsset = AVAsset(url: url)
         let imageGenerator = AVAssetImageGenerator(asset: asset)
-
+        
         do {
             let thumbnailImage = try imageGenerator.copyCGImage(at: CMTimeMake(value: 1, timescale: 60), actualTime: nil)
             return UIImage(cgImage: thumbnailImage)
@@ -209,8 +225,27 @@ extension MediaPicker {
             self.logErrorAction?("[Media Picker] something went wrong while getting thumbnail image",
                                  "error: \(error.localizedDescription)")
         }
-
+        
         return nil
+    }
+    
+    private func isVideoDurationValid(pickedVideoURL: URL) -> Bool {
+        let videoMaximumDurationInSeconds = videoMaximumDurationInMinutes * 60
+        let pickedVideoDurationInSeconds = getVideoDuration(forUrl: pickedVideoURL)
+        
+        if pickedVideoDurationInSeconds <= videoMaximumDurationInSeconds, pickedVideoDurationInSeconds >= 1 {
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    private func getVideoDuration(forUrl url: URL) -> Double {
+        let asset = AVURLAsset(url: url)
+        let videoDuration = asset.duration
+        let videoDurationInSeconds = CMTimeGetSeconds(videoDuration)
+        
+        return videoDurationInSeconds
     }
     
     private func dismiss(picker: PHPickerViewController) {
