@@ -71,10 +71,13 @@ open class DetailViewController<T: ActivityProtocol>: BaseFlatFeedViewController
     public var reportUserAction: ((String, String) -> Void)?
     public var navigateToUserProfileAction: ((String) -> Void)?
     public var shareTimeLinePostAction: ((String?) -> Void)?
+    public var feedLoadingCompletion: ((Error?) -> Void)?
     
     public var isCurrentUser: Bool = false
     public var autoLikeEnabled: Bool = false
     public var presenter: FlatFeedPresenter<T>?
+    public var activityId: String?
+    public var currentUserId: String?
     
     
     /// An activity presenter. See `ActivityPresenter`.
@@ -89,8 +92,9 @@ open class DetailViewController<T: ActivityProtocol>: BaseFlatFeedViewController
     
     open override func viewDidLoad() {
         super.viewDidLoad()
-        updateSectionsIndex()
+        loadActivityByID()
         
+        updateSectionsIndex()
         setupCommentTextField(avatarImage: nil)
         if sections.contains(.comments) {
             reloadComments()
@@ -681,5 +685,44 @@ extension DetailViewController {
         closeButton.addTap { [weak self] _ in
             self?.dismiss(animated: true)
         }
+    }
+}
+
+extension DetailViewController {
+    private func loadActivityByID() {
+        guard let activityId = activityId, let currentUserId = currentUserId else { return }
+        refreshControl.beginRefreshing()
+        Client.shared.get(typeOf: Activity.self, activityIds: [activityId]) { [weak self] result in
+            guard let self else { return }
+            do {
+                let response = try result.get()
+                guard let userActivityWithReactionsCount = response.results.first else {
+                    return
+                }
+                self.updateActivity(userActivityWithReactionsCount, currentUserId: currentUserId)
+            } catch let responseError {
+                self.handleError(error: responseError)
+            }
+        }
+    }
+    
+    private func updateActivity(_ activity: Activity, currentUserId: String) {
+        guard let activity = activity as? T else {
+            self.feedLoadingCompletion?(NSError(domain: "Failed to cast activity to expected type \(T.self)", code: 0))
+            return
+        }
+        let reactionPresenter = ReactionPresenter()
+        let activityPresenter: ActivityPresenter<T> = ActivityPresenter(activity: activity, reactionPresenter: reactionPresenter, reactionTypes: [.comments, .likes])
+        self.activityPresenter = activityPresenter
+        self.isCurrentUser = activity.actor.id == currentUserId
+        self.feedLoadingCompletion?(nil)
+        DispatchQueue.mainAsyncIfNeeded { [weak self] in
+            self?.reloadComments()
+        }
+    }
+    
+    private func handleError(error: Error) {
+        self.refreshControl.endRefreshing()
+        self.feedLoadingCompletion?(error)
     }
 }

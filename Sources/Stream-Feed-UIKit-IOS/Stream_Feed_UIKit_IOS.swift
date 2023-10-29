@@ -52,80 +52,24 @@ public struct StreamFeedUIKitIOS {
                                          reportUserAction: @escaping ((String, String) -> Void),
                                          shareTimeLinePostAction:  @escaping ((String?) -> Void),
                                          navigateToUserProfileAction: @escaping ((String) -> Void),
-                                         completion: @escaping (Result<PostDetailTableViewController, Error>) -> Void) {
-        
-        StreamFeedUIKitIOS.loadActivityByID(activityId: activityId) { result in
-            do {
-                let activity = try result.get()
-                let isCurrentUser: Bool = activity.actor.id == currentUserId
-                let activityDetailTableViewController = self.createActivityDetailTableViewController(activity: activity,
-                                                                                                     isCurrentUser: isCurrentUser,                   autoLikeEnabled: autoLikeEnabled,
-                                                                                                     reportUserAction: reportUserAction,
-                                                                                                     shareTimeLinePostAction: shareTimeLinePostAction,
-                                                                                                     navigateToUserProfileAction: navigateToUserProfileAction)
-                completion(.success(activityDetailTableViewController))
-            } catch {
-                completion(.failure(error))
-            }
-        }
-    }
-    
-    private static func createActivityDetailTableViewController(activity: Activity,
-                                                                isCurrentUser: Bool,
-                                                                autoLikeEnabled: Bool,
-                                                                reportUserAction: @escaping ((String, String) -> Void),
-                                                                shareTimeLinePostAction:  @escaping ((String?) -> Void),
-                                                                navigateToUserProfileAction: @escaping ((String) -> Void)) -> PostDetailTableViewController {
+                                         feedLoadingCompletion: @escaping ((Error?) -> Void)) -> PostDetailTableViewController {
         
         let activityDetailTableViewController = PostDetailTableViewController()
         guard let flatFeed = Client.shared.flatFeed(feedSlug: "user") else { return PostDetailTableViewController() }
         let flatFeedPresenter = FlatFeedPresenter<Activity>(flatFeed: flatFeed,
                                                             reactionTypes: [.comments, .likes])
-        let reactionPresenter = ReactionPresenter()
-        
-        let activityPresenter = ActivityPresenter(activity: activity, reactionPresenter: reactionPresenter, reactionTypes: [.comments, .likes])
         
         activityDetailTableViewController.reportUserAction = reportUserAction
         activityDetailTableViewController.shareTimeLinePostAction = shareTimeLinePostAction
         activityDetailTableViewController.navigateToUserProfileAction = navigateToUserProfileAction
-        activityDetailTableViewController.isCurrentUser = isCurrentUser
         activityDetailTableViewController.autoLikeEnabled = autoLikeEnabled
         activityDetailTableViewController.presenter = flatFeedPresenter
-        activityDetailTableViewController.activityPresenter = activityPresenter
+        activityDetailTableViewController.currentUserId = currentUserId
+        activityDetailTableViewController.activityId = activityId
+        activityDetailTableViewController.feedLoadingCompletion = feedLoadingCompletion
         activityDetailTableViewController.sections = [.activity, .comments]
         
         return activityDetailTableViewController
-    }
-
-    
-    public static func loadActivityByID(activityId: String, completion: @escaping (Result<Activity, Error>) -> Void) {
-        Client.shared.get(typeOf: Activity.self, activityIds: [activityId]) { result in
-            do {
-                let response = try result.get()
-                guard let activity = response.results.first else {
-                    return
-                }
-                StreamFeedUIKitIOS.filterUserActivity(activityId: activityId, userId: activity.actor.id, completion: completion)
-            } catch let responseError {
-                completion(.failure(responseError))
-            }
-        }
-    }
-    
-    public static func filterUserActivity(activityId: String, userId: String, completion: @escaping (Result<Activity, Error>) -> Void) {
-        let feedID = FeedId(feedSlug: "user", userId: userId)
-        StreamFeedUIKitIOS.flatFeed = FlatFeed(feedID)
-        StreamFeedUIKitIOS.flatFeed?.get(typeOf: Activity.self, pagination: .none, includeReactions: [.counts, .own, .latest], completion: { result in
-            do {
-                let response = try result.get()
-                let activites = response.results
-                
-                guard let userActivityWithReactions = activites.filter { $0.id == activityId }.first else { return }
-                completion(.success(userActivityWithReactions))
-            } catch let responseError {
-                completion(.failure(responseError))
-            }
-        })
     }
     
     public static func loadFollowingFeeds(userId: String, pageSize: Int, completion: @escaping (Result<[Activity], Error>) -> Void) {
