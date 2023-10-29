@@ -40,8 +40,11 @@ extension UIStackView {
             let imageId = url.getImageID()
             let resource = KF.ImageResource(downloadURL: url, cacheKey: imageId)
             imageView.loadImage(from: resource) { [weak self] result in
-                if let image = try? result.get().image {
-                    self?.addImage(at: index, image)
+                switch result {
+                case .success(let result):
+                    self?.addImage(at: index, result.image)
+                case .failure(_):
+                    break
                 }
             }
         }

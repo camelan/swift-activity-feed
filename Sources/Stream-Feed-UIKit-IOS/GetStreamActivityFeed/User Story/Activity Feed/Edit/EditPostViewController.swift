@@ -219,11 +219,7 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
     }
     
     private func loadAvatar() {
-        User.current?.loadAvatar { [weak self] image in
-            if let image = image, let avatarView = self?.avatarView {
-                avatarView.image = image.square(with: avatarView.bounds.width)
-            }
-        }
+        avatarView.imageURL = User.current?.avatarURL?.absoluteString
     }
     
     private func updateSaveButtonEnabling() {

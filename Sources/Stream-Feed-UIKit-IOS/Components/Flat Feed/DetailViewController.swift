@@ -101,13 +101,7 @@ open class DetailViewController<T: ActivityProtocol>: BaseFlatFeedViewController
             
             if canAddComment {
                 if let user = User.current {
-                    DispatchQueue.global().async {
-                        user.loadAvatar { image in
-                            DispatchQueue.main.async { [weak self] in
-                                self?.setupCommentTextField(avatarImage: image)
-                            }
-                        }
-                    }
+                    self.setupCommentTextField(avatarURL: user.avatarURL)
                 } else {
                     if Client.shared.currentUser != nil {
                         print("❌ The current user was not setupped with correct type. " +
@@ -115,7 +109,7 @@ open class DetailViewController<T: ActivityProtocol>: BaseFlatFeedViewController
                     } else {
                         print("❌ The current user not found. Did you setup the user with `setupUser`?")
                     }
-                    setupCommentTextField(avatarImage: nil)
+                    setupCommentTextField(avatarURL: nil)
                 }
             }
         }
@@ -588,8 +582,7 @@ open class DetailViewController<T: ActivityProtocol>: BaseFlatFeedViewController
         
         cell.updateComment(name: comment.user.name, comment: text, date: comment.created)
       
-        comment.user.loadAvatar { [weak cell] in cell?.avatarImageView?.image = $0 }
-        
+        cell.avatarImageView.loadImage(from: comment.user.avatarURL?.absoluteString)
         // Reply button.
         cell.replyButton.addTap { [weak self] _ in
             if let self = self, case .comment(let text) = comment.data {
@@ -631,11 +624,11 @@ open class DetailViewController<T: ActivityProtocol>: BaseFlatFeedViewController
     
     // MARK: - Comment Text Field
     
-    private func setupCommentTextField(avatarImage: UIImage?) {
+    private func setupCommentTextField(avatarURL: URL?) {
         textToolBar.addToSuperview(view, placeholderText: "Leave reply")
         tableView.snp.makeConstraints { $0.bottom.equalTo(textToolBar.snp.top) }
         textToolBar.showAvatar = true
-        textToolBar.avatarView.image = avatarImage
+        textToolBar.avatarView.imageURL = avatarURL?.absoluteString
         textToolBar.sendButton.addTarget(self, action: #selector(send(_:)), for: .touchUpOutside)
     }
     

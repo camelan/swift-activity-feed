@@ -59,6 +59,22 @@ public class AvatarView: UIView {
             touchPlaceholder()
         }
     }
+    /// An imageURL.
+    public var imageURL: String? {
+        didSet {
+            imageView.loadImage(from: imageURL, downSampleSize: CGSize(width: 48, height: 48)) { [weak self] result in
+                guard let self else { return }
+                switch result {
+                case .success(let image):
+                    self.imageView.contentMode = .scaleAspectFill
+                    self.imageView.image = image.image
+                    self.touchPlaceholder()
+                case .failure(_):
+                    self.touchPlaceholder()
+                }
+            }
+        }
+    }
     
     /// Check if the image of the avatar is the placeholder image.
     public var isPlaceholder: Bool {
@@ -73,7 +89,6 @@ public class AvatarView: UIView {
         let imageView = UIImageView(frame: .zero)
         imageView.contentMode = .scaleAspectFill
         addSubview(imageView)
-        
         return imageView
     }()
     
