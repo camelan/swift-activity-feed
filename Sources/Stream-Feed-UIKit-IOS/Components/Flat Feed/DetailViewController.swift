@@ -93,9 +93,8 @@ open class DetailViewController<T: ActivityProtocol>: BaseFlatFeedViewController
     open override func viewDidLoad() {
         super.viewDidLoad()
         loadActivityByID()
-        
         updateSectionsIndex()
-        setupCommentTextField(avatarImage: nil)
+
         if sections.contains(.comments) {
             reloadComments()
             
