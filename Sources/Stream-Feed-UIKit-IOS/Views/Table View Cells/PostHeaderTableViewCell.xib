@@ -102,7 +102,7 @@
                             <constraint firstAttribute="height" constant="320" id="Sqh-5C-tod"/>
                         </constraints>
                     </imageView>
-                    <button clipsSubviews="YES" contentMode="scaleAspectFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Kjh-KD-aLe">
+                    <button clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Kjh-KD-aLe">
                         <rect key="frame" x="16" y="16" width="48" height="48"/>
                         <color key="backgroundColor" white="0.94999999999999996" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
@@ -116,9 +116,6 @@
                                 <integer key="value" value="24"/>
                             </userDefinedRuntimeAttribute>
                         </userDefinedRuntimeAttributes>
-                        <connections>
-                            <action selector="profileImageTapped:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="EkX-Q9-LfZ"/>
-                        </connections>
                     </button>
                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="TUl-zR-7tp">
                         <rect key="frame" x="326" y="30" width="25" height="20"/>
@@ -139,25 +136,38 @@
                             <action selector="photoImageTapped:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="94b-ws-geg"/>
                         </connections>
                     </button>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dvb-4u-fgo">
+                        <rect key="frame" x="16" y="16" width="174.5" height="48"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                        <connections>
+                            <action selector="profileImageTapped:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="tWn-zZ-YSK"/>
+                        </connections>
+                    </button>
                 </subviews>
                 <constraints>
                     <constraint firstItem="TUl-zR-7tp" firstAttribute="leading" secondItem="S86-6T-t2E" secondAttribute="trailing" constant="8" id="0DS-xr-uFR"/>
                     <constraint firstItem="Mbn-bb-JtW" firstAttribute="top" secondItem="S86-6T-t2E" secondAttribute="bottom" constant="10" id="3Ms-Sa-Gip"/>
                     <constraint firstItem="jj7-32-SZg" firstAttribute="trailing" secondItem="Pi4-xh-ICN" secondAttribute="trailing" id="43V-xO-AqI"/>
                     <constraint firstItem="jj7-32-SZg" firstAttribute="leading" secondItem="Pi4-xh-ICN" secondAttribute="leading" id="5Sf-KC-XkT"/>
+                    <constraint firstItem="dvb-4u-fgo" firstAttribute="bottom" secondItem="Kjh-KD-aLe" secondAttribute="bottom" id="BMX-lv-hrW"/>
                     <constraint firstItem="jj7-32-SZg" firstAttribute="bottom" secondItem="Pi4-xh-ICN" secondAttribute="bottom" id="CVE-Mu-ZJP"/>
                     <constraint firstItem="S86-6T-t2E" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="16" id="D1h-s1-jMO"/>
                     <constraint firstItem="TUl-zR-7tp" firstAttribute="centerY" secondItem="S86-6T-t2E" secondAttribute="centerY" id="Ftu-oa-kNB"/>
+                    <constraint firstItem="dvb-4u-fgo" firstAttribute="leading" secondItem="Kjh-KD-aLe" secondAttribute="leading" id="G3d-eE-lIe"/>
                     <constraint firstItem="jj7-32-SZg" firstAttribute="top" secondItem="Pi4-xh-ICN" secondAttribute="top" id="Iio-Vf-VZm"/>
                     <constraint firstAttribute="trailing" secondItem="Mbn-bb-JtW" secondAttribute="trailing" constant="16" id="J9P-h0-Usx"/>
+                    <constraint firstItem="dvb-4u-fgo" firstAttribute="trailing" secondItem="BlM-ye-otK" secondAttribute="trailing" id="Jyc-D1-1m7"/>
                     <constraint firstItem="S86-6T-t2E" firstAttribute="leading" secondItem="Kjh-KD-aLe" secondAttribute="trailing" constant="16" id="WOK-gi-gaD"/>
                     <constraint firstAttribute="bottom" secondItem="Pi4-xh-ICN" secondAttribute="bottom" priority="750" constant="8" id="Xhy-AB-TtM"/>
+                    <constraint firstItem="dvb-4u-fgo" firstAttribute="top" secondItem="Kjh-KD-aLe" secondAttribute="top" id="Yd4-GE-Vow"/>
                     <constraint firstItem="Pi4-xh-ICN" firstAttribute="top" secondItem="Mbn-bb-JtW" secondAttribute="bottom" constant="8" id="bLK-hB-FXk"/>
                     <constraint firstAttribute="trailing" secondItem="Pi4-xh-ICN" secondAttribute="trailing" id="fZb-jx-JHu"/>
                     <constraint firstItem="Pi4-xh-ICN" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="mt3-Mi-ITF"/>
                     <constraint firstItem="Mbn-bb-JtW" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="16" id="oFk-cX-UZk"/>
                     <constraint firstAttribute="trailingMargin" secondItem="TUl-zR-7tp" secondAttribute="trailing" constant="8" id="pbp-HX-hS9"/>
                     <constraint firstItem="Kjh-KD-aLe" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="16" id="rs6-Ac-5MY"/>
+                    <constraint firstItem="dvb-4u-fgo" firstAttribute="centerY" secondItem="Kjh-KD-aLe" secondAttribute="centerY" id="tIR-jG-hfa"/>
                     <constraint firstItem="Kjh-KD-aLe" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="16" id="va0-gA-Tnf"/>
                     <constraint firstAttribute="bottom" secondItem="Mbn-bb-JtW" secondAttribute="bottom" priority="250" constant="8" id="wnt-Ix-CDy"/>
                 </constraints>
@@ -174,6 +184,7 @@
                 <outlet property="postSettingsButton" destination="TUl-zR-7tp" id="Xg3-EI-eti"/>
                 <outlet property="repostInfoLabel" destination="YjD-CN-ZL2" id="sel-SM-DWR"/>
                 <outlet property="repostInfoStackView" destination="NcK-Ag-RoS" id="Yn7-XS-SdY"/>
+                <outlet property="userProfileButton" destination="dvb-4u-fgo" id="y1s-el-Pb9"/>
             </connections>
             <point key="canvasLocation" x="204" y="154.72263868065968"/>
         </tableViewCell>
