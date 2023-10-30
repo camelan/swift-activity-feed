@@ -700,7 +700,7 @@ extension DetailViewController {
             return
         }
         let reactionPresenter = ReactionPresenter()
-        let activityPresenter: ActivityPresenter<T> = ActivityPresenter(activity: activity, reactionPresenter: reactionPresenter, reactionTypes: [.comments, .likes])
+        let activityPresenter: ActivityPresenter<T> = ActivityPresenter(activity: activity, reactionPresenter: reactionPresenter, reactionTypes: [.comments, .likes], timelineVideoEnabled: timelineVideoEnabled)
         self.activityPresenter = activityPresenter
         self.isCurrentUser = activity.actor.id == currentUserId
         self.feedLoadingCompletion?(nil)
