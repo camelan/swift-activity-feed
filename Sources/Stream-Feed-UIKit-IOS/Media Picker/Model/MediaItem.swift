@@ -12,6 +12,14 @@ public enum MediaType: String {
     case image, video
 }
 
+public enum State: Equatable {
+   case onStart
+   case Uploaded
+   case Error
+   case Cancelled
+   case Uploading(Double)
+}
+
 struct MediaItem {
     var id: String
     var mediaType: MediaType

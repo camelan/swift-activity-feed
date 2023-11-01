@@ -15,7 +15,7 @@ extension TextToolBar {
     public func uploadImages(imagePrefixFileName: String = "image",
                              _ completion: @escaping (_ imageURLs: [URL]?, _ error: Error?) -> Void) {
         File.files(from: images, process: { File(name: imagePrefixFileName.appending(String($0)), jpegImage: $1) }) { files in
-            Client.shared.upload(images: files) { result in
+            Client.shared.upload(images: files, completion: { result in
                 do {
                     
                 let imageURLs = try result.get()
@@ -23,7 +23,7 @@ extension TextToolBar {
                 } catch {
                     completion(nil, error)
                 }
-            }
+            }, fileUploadedCompletion: { })
         }
     }
 }

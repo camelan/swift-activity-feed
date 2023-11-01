@@ -30,7 +30,10 @@ public final class EditPostPresenter {
     var images: [UIImage] = []
     var videoCompressorManager: VideoCompressorService = VideoCompressorManager()
     var videoCompressionSubject = CurrentValueSubject<CompressionResult, Never>(CompressionResult.onStart)
+    var filesProgressSubject = CurrentValueSubject<State, Never>(.onStart)
     var compressionCanceled = false
+    var uploadTask: GetStream.Cancellable?
+    var uploadedFilesCount = 0
 
     var mediaItems: [MediaItem] = []
 
@@ -75,6 +78,7 @@ public final class EditPostPresenter {
         if hasMediaItems {
             let videoItems = mediaItems.filter({ $0.mediaType == .video })
             guard videoItems.count > 0 else {
+                filesProgressSubject.send(.onStart)
                 await saveWithMediaItems(text: text, completion: completion)
                 return
             }
@@ -87,35 +91,60 @@ public final class EditPostPresenter {
     private func saveWithMediaItems(text: String?, completion: @escaping (_ error: Error?) -> Void) async {
         let mediaFiles = prepareMediaFiles()
         let videoThumbnailFiles = prepareThumbnailFiles()
+        uploadedFilesCount = 0
+
         do {
             // Upload videoThumbnailFiles
             if !videoThumbnailFiles.isEmpty {
-                let thumbnailURLs = try await uploadFilesAsync(files: videoThumbnailFiles)
+                let thumbnailURLs = try await uploadFilesAsync(files: videoThumbnailFiles,
+                                                               fileUploadedCompletion: { },
+                                                               fileUploadProgress: { _ in })
                 updateMediaItemsWithThumbnailURLs(thumbnailURLs)
             }
 
 
             // Upload other mediaFiles.
-            let mediaURLs = try await uploadFilesAsync(files: mediaFiles)
+            let mediaURLs = try await uploadFilesAsync(files: mediaFiles,
+                                                       fileUploadedCompletion: { [weak self] in
+                guard let self else { return }
+                self.updateMediaProgressView()
+            }, fileUploadProgress: { [weak self] progressPrecentage in
+                self?.filesProgressSubject.send(.Uploading(progressPrecentage))
+            })
             mediaItems = updateMediaItemsWithMediaURLs(mediaURLs)
 
             saveActivity(text: text, completion: completion)
         } catch let error {
             logErrorAction?("Something went wrong while saving meida items", error.localizedDescription)
+            filesProgressSubject.send(.Error)
             completion(error)
         }
     }
 
-    private func uploadFilesAsync(files: [File]) async throws -> [URL] {
+    private func updateMediaProgressView() {
+        let totalMediaFiles = mediaItems.count
+        uploadedFilesCount += 1
+
+        if uploadedFilesCount >= totalMediaFiles {
+            filesProgressSubject.send(.Uploaded)
+        }
+    }
+
+    private func uploadFilesAsync(files: [File],
+                                  fileUploadedCompletion: @escaping (() -> Void),
+                                  fileUploadProgress: @escaping ((Double) -> Void)) async throws -> [URL] {
         return try await withCheckedThrowingContinuation { continuation in
-            Client.shared.upload(files: files) { result in
+            uploadTask = Client.shared.upload(files: files,
+                                 completion: { result in
                 switch result {
                 case .success(let urls):
                     continuation.resume(returning: urls)
                 case .failure(let error):
                     continuation.resume(throwing: error)
                 }
-            }
+            },
+                                              fileUploadedCompletion: fileUploadedCompletion,
+                                              fileUploadProgress: fileUploadProgress)
         }
     }
 
