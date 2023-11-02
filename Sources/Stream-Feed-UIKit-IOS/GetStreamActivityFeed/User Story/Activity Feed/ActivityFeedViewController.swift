@@ -102,6 +102,7 @@ public final class ActivityFeedViewController: FlatFeedViewController<Activity>,
     
     public override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         let imageCompression: Double = 0.5
+        let videoMaximumDurationInMinutes = 2.0
         let videoCompression: Int = 100
         let timeLineVideoEnabled: Bool = false
          if segue.destination is EditPostViewController,
@@ -112,6 +113,7 @@ public final class ActivityFeedViewController: FlatFeedViewController<Activity>,
                                                                  view: editPostViewController,
                                                                  activity: activity,
                                                                  imageCompression: imageCompression,
+                                                                 videoMaximumDurationInMinutes: videoMaximumDurationInMinutes,
                                                                  videoCompression: videoCompression,
                                                                  timeLineVideoEnabled: timeLineVideoEnabled,
                                                                  logErrorAction: { _,_ in })

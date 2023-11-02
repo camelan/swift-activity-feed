@@ -282,24 +282,37 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
     }
     
     private func presentGalleryMediaPicker() {
-        let timelineVideoEnabled = presenter?.timeLineVideoEnabled ?? false
-        let logErrorAction = presenter?.logErrorAction
-        
-        mediaPickerManager = MediaPicker(presentationController: self,
-                                         delegate: self,
-                                         timelineVideoEnabled: timelineVideoEnabled,
-                                         logErrorAction: logErrorAction)
+        mediaPickerManager = makeMediaPicker()
         mediaPickerManager?.openGallery()
     }
     
     private func presentCameraMediaPicker() {
+        mediaPickerManager = makeMediaPicker()
+        mediaPickerManager?.openCamera()
+    }
+    
+    private func makeMediaPicker() -> MediaPicker {
         let timelineVideoEnabled = presenter?.timeLineVideoEnabled ?? false
+        let videoMaximumDurationInMinutes = presenter?.videoMaximumDurationInMinutes ?? 2.0
         let logErrorAction = presenter?.logErrorAction
-        mediaPickerManager = MediaPicker(presentationController: self,
+        let mediaPicker = MediaPicker(presentationController: self,
                                          delegate: self,
+                                         videoMaximumDurationInMinutes: videoMaximumDurationInMinutes,
                                          timelineVideoEnabled: timelineVideoEnabled,
                                          logErrorAction: logErrorAction)
-        mediaPickerManager?.openCamera()
+        mediaPicker.showAlertWithErrorMsgAction = { [weak self] errorMsg in
+            self?.showAlertWith(message: errorMsg)
+        }
+        
+        return mediaPicker
+    }
+    
+    private func showAlertWith(message: String) {
+        let okAction: AlertAction = ("Ok", .cancel, {}, true)
+        
+        DispatchQueue.mainAsyncIfNeeded { [weak self] in
+            self?.alertWithAction(title: "Error", message: message, alertStyle: .alert, tintColor: nil, actions: [okAction])
+        }
     }
     
     private func handlePickedMedia(mediaItems: [MediaItem]) {

@@ -22,11 +22,13 @@ class MediaPicker: NSObject {
     private weak var presentationController: UIViewController?
     private weak var delegate: PHImagePickerDelegate?
     let logErrorAction: ((String, String) -> Void)?
+    var showAlertWithErrorMsgAction: ((String) -> Void)?
     var timelineVideoEnabled: Bool
-    var videoMaximumDurationInMinutes: Double = 2.0
+    var videoMaximumDurationInMinutes: Double
     
     public init(presentationController: UIViewController,
                 delegate: PHImagePickerDelegate,
+                videoMaximumDurationInMinutes: Double,
                 timelineVideoEnabled: Bool,
                 logErrorAction: ((String, String) -> Void)?) {
         var configuration = PHPickerConfiguration(photoLibrary: PHPhotoLibrary.shared())
@@ -34,6 +36,7 @@ class MediaPicker: NSObject {
         configuration.selectionLimit = 1
         configuration.preferredAssetRepresentationMode = .automatic
         self.logErrorAction = logErrorAction
+        self.videoMaximumDurationInMinutes = videoMaximumDurationInMinutes
         self.timelineVideoEnabled = timelineVideoEnabled
         picker = PHPickerViewController(configuration: configuration)
         super.init()
@@ -68,7 +71,12 @@ extension MediaPicker: PHPickerViewControllerDelegate {
                         guard isVideoDurationValid(pickedVideoURL: pickedVideoURL) else {
                             self.logErrorAction?("Error: Picked video duration exceeds the maximum allowed duration.",
                                                  "picked video duration: \(getVideoDuration(forUrl: pickedVideoURL)) seconds")
-                            dismiss(picker: picker)
+                            dismiss(picker: picker) { [weak self] in
+                                guard let self else { return }
+                                let videoLimit = Int(self.videoMaximumDurationInMinutes)
+                                let minString = videoLimit > 1 ? "mins" : "min"
+                                self.showAlertWithErrorMsgAction?("Maximum duration for a video is \(videoLimit) \(minString), Please choose a shorter video, or clip your video to be under \(videoLimit) \(minString)")
+                            }
                             return
                         }
                         
@@ -192,7 +200,12 @@ extension MediaPicker: UIImagePickerControllerDelegate, UINavigationControllerDe
                 guard isVideoDurationValid(pickedVideoURL: videoFileURL) else {
                     self.logErrorAction?("Error: Picked video duration exceeds the maximum allowed duration.",
                                          "picked video duration: \(getVideoDuration(forUrl: videoFileURL)) seconds")
-                    dismiss(picker: picker)
+                    dismiss(picker: picker) { [weak self] in
+                        guard let self else { return }
+                        let videoLimit = Int(self.videoMaximumDurationInMinutes)
+                        let minString = videoLimit > 1 ? "mins" : "min"
+                        self.showAlertWithErrorMsgAction?("Maximum duration for a video is \(videoLimit) \(minString), Please choose a shorter video, or clip your video to be under \(videoLimit) \(minString)")
+                    }
                     return
                 }
                 
@@ -248,15 +261,17 @@ extension MediaPicker {
         return videoDurationInSeconds
     }
     
-    private func dismiss(picker: PHPickerViewController) {
+    private func dismiss(picker: PHPickerViewController,
+                         completion: @escaping (() -> Void) = {}) {
         DispatchQueue.mainAsyncIfNeeded {
-            picker.dismiss(animated: true, completion: nil)
+            picker.dismiss(animated: true, completion: completion)
         }
     }
     
-    private func dismiss(picker: UIImagePickerController) {
+    private func dismiss(picker: UIImagePickerController,
+                         completion: @escaping (() -> Void) = {}) {
         DispatchQueue.mainAsyncIfNeeded {
-            picker.dismiss(animated: true, completion: nil)
+            picker.dismiss(animated: true, completion: completion)
         }
     }
 }

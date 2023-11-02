@@ -19,6 +19,7 @@ public protocol EditPostViewable: AnyObject {
 public final class EditPostPresenter {
     let flatFeed: FlatFeed
     let imageCompression: Double
+    let videoMaximumDurationInMinutes: Double
     let videoCompression: Int
     let timeLineVideoEnabled: Bool
     let logErrorAction: ((String, String) -> Void)?
@@ -48,6 +49,7 @@ public final class EditPostPresenter {
          view: EditPostViewable,
          activity: Activity? = nil,
          imageCompression: Double,
+         videoMaximumDurationInMinutes: Double,
          videoCompression: Int,
          timeLineVideoEnabled: Bool,
          logErrorAction: @escaping ((String, String) -> Void)) {
@@ -56,6 +58,7 @@ public final class EditPostPresenter {
         self.activity = activity
         self.imageCompression = imageCompression
         self.videoCompression = videoCompression
+        self.videoMaximumDurationInMinutes = videoMaximumDurationInMinutes
         self.timeLineVideoEnabled = timeLineVideoEnabled
         self.logErrorAction = logErrorAction
     }

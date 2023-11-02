@@ -245,6 +245,7 @@ open class DetailViewController<T: ActivityProtocol>: BaseFlatFeedViewController
     private func navigateToPostDetails(with activity: Activity) {
         guard let userFeedId: FeedId = FeedId(feedSlug: "user") else { return }
         let imageCompression: Double = 0.5
+        let videoMaximumDurationInMinutes: Double = 2.0
         let videoCompression: Int = 100
         let timeLineVideoEnabled: Bool = false
         let editPostViewController = EditPostViewController.fromBundledStoryboard()
@@ -252,6 +253,7 @@ open class DetailViewController<T: ActivityProtocol>: BaseFlatFeedViewController
                                                              view: editPostViewController,
                                                              activity: activity,
                                                              imageCompression: imageCompression,
+                                                             videoMaximumDurationInMinutes: videoMaximumDurationInMinutes,
                                                              videoCompression: videoCompression,
                                                              timeLineVideoEnabled: timeLineVideoEnabled,
                                                              logErrorAction: { _, _ in })

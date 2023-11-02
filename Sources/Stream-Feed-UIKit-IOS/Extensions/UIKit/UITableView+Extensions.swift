@@ -60,9 +60,11 @@ extension UITableView {
                 return cell
             case .attachmentImages(let mediaItems):
                 let cell = dequeueReusableCell(for: indexPath) as PostAttachmentImagesTableViewCell
-                guard mediaItems.count > 0 else { return nil }
+                guard mediaItems.count > 1 else { return nil }
+                var updatedMediaItem: [UploadedMediaItem] = mediaItems
+                updatedMediaItem.removeFirst()
                 
-                cell.config(mediaItems: mediaItems)
+                cell.config(mediaItems: updatedMediaItem)
                 cell.imagesTapped = { selectedMediaItem in
                     imagesTappedAction?(mediaItems, selectedMediaItem)
                 }
