@@ -48,6 +48,7 @@ public struct StreamFeedUIKitIOS {
     public static func makeEditPostVC(petId: String? = nil,
                                       imageCompression: Double,
                                       videoCompression: Int,
+                                      videoMaximumDurationInMinutes: Double,
                                       timeLineVideoEnabled: Bool,
                                       logErrorAction: @escaping ((String, String) -> Void)) -> EditPostViewController {
         guard let userFeedId: FeedId = FeedId(feedSlug: "user") else { return EditPostViewController() }
@@ -56,6 +57,7 @@ public struct StreamFeedUIKitIOS {
                                                              view: editPostViewController,
                                                              petId: petId,
                                                              imageCompression: imageCompression,
+                                                             videoMaximumDurationInMinutes: videoMaximumDurationInMinutes,
                                                              videoCompression: videoCompression,
                                                              timeLineVideoEnabled: timeLineVideoEnabled,
                                                              logErrorAction: logErrorAction)

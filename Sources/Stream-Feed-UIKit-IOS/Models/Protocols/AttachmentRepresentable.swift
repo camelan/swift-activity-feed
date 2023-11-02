@@ -27,7 +27,7 @@ extension AttachmentRepresentable {
         if let mediaItems = media, mediaItems.count > 0, timelineVideoEnabled {
             var updatedMediaItem: [UploadedMediaItem] = mediaItems
             updatedMediaItem.removeFirst()
-            return updatedMediaItem.count > 0 ? updatedMediaItem : nil
+            return updatedMediaItem.count > 0 ? mediaItems : nil
         } else if let imageURLs = attachment?.imageURLs, imageURLs.count > 0 {
             return imageURLs.map { UploadedMediaItem(mediaType: "image", imageURL: $0, videoURL: nil, thumbnailURL: nil) }
         }
