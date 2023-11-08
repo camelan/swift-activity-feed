@@ -94,7 +94,7 @@ public final class ActivityFeedViewController: FlatFeedViewController<Activity>,
         }
         
         if showDetail {
-            performSegue(show: PostDetailTableViewController.self, sender: activityPresenter)
+            self.navigateToPostDetails?(activityPresenter.activity.id)
         } else {
             super.tableView(tableView, didSelectRowAt: indexPath)
         }
@@ -107,7 +107,7 @@ public final class ActivityFeedViewController: FlatFeedViewController<Activity>,
             let activity = sender as? Activity {
             let editPostViewController = segue.destination as! EditPostViewController
             editPostViewController.presenter = EditPostPresenter(flatFeed: Client.shared.flatFeed(userFeedId),
-                                                                 view: editPostViewController, activity: activity, imageCompression: imageCompression)
+                                                                 view: editPostViewController, activity: activity, imageCompression: imageCompression, petId: nil)
             return
         }
         

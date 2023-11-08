@@ -39,6 +39,7 @@ open class FlatFeedViewController<T: ActivityProtocol>: BaseFlatFeedViewControll
     public var reportUserAction: ((String, String) -> Void)?
     public var shareTimeLinePostAction: ((String?) -> Void)?
     public var navigateToUserProfileAction: ((String) -> Void)?
+    public var navigateToPostDetails: ((String) -> Void)?
     public var entryPoint: GetStreamFeedEntryPoint = .timeline
     
     open override func viewDidLoad() {

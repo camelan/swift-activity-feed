@@ -19,10 +19,12 @@ public final class Activity: EnrichedActivity<User, ActivityObject, Reaction>, T
     private enum CodingKeys: String, CodingKey {
         case text
         case attachments
+        case petId
     }
     
     public var text: String?
     public var attachment: ActivityAttachment?
+    public var petId: String?
     
     public var original: Activity {
         switch object {
@@ -51,6 +53,7 @@ public final class Activity: EnrichedActivity<User, ActivityObject, Reaction>, T
         let container = try decoder.container(keyedBy: CodingKeys.self)
         text = try container.decodeIfPresent(String.self, forKey: .text)
         attachment = try container.decodeIfPresent(ActivityAttachment.self, forKey: .attachments)
+        petId = try container.decodeIfPresent(String.self, forKey: .petId)
         try super.init(from: decoder)
     }
     
@@ -58,6 +61,7 @@ public final class Activity: EnrichedActivity<User, ActivityObject, Reaction>, T
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encodeIfPresent(text, forKey: .text)
         try container.encodeIfPresent(attachment, forKey: .attachments)
+        try container.encodeIfPresent(petId, forKey: .petId)
         try super.encode(to: encoder)
     }
 }
