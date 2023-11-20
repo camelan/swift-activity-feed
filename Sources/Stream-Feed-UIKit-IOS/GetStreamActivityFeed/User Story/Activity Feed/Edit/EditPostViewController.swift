@@ -24,6 +24,7 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
     var entryPoint: EditTimelinePostEntryPoint = .newPost
     var keyboardIsShown: Bool = false
     var compressedVideosCount = 0
+    var uploadedMediaCount = 0
     var mediaPickerManager: MediaPicker?
     
     private var bag = Set<AnyCancellable>()
@@ -111,7 +112,10 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
                 switch uploadStatus {
                 case .onStart:
                     showMediaUploadProgressView(progress: 0.0)
-                    presentProgressView()
+                    uploadedMediaCount += 1
+                    if uploadedMediaCount == 1 && compressedVideosCount == 0 {
+                        presentProgressView()
+                    }
                 case .Uploading(let progress):
                     self.showMediaUploadProgressView(progress: progress)
                 case .Uploaded, .Error, .Cancelled:

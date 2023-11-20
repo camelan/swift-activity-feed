@@ -130,6 +130,8 @@ public final class EditPostPresenter {
 
         if uploadedFilesCount >= totalMediaFiles {
             filesProgressSubject.send(.Uploaded)
+        } else {
+            filesProgressSubject.send(.onStart)
         }
     }
 
