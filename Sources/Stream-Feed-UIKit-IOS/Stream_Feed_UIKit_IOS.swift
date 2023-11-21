@@ -223,14 +223,16 @@ extension StreamFeedUIKitIOS {
     }
     
     public static func loadNotifications(userId: String,
+                                         lastId: String?,
                                          pageSize: Int,
                                          completion: @escaping (Result<([NotificationGroup<GetStream.EnrichedActivity<String, String, DefaultReaction>>], Int), Error>) -> Void) {
         let feedID = FeedId(feedSlug: "notification", userId: userId)
+        let pagination: Pagination = lastId == nil ? .limit(pageSize) : (.limit(pageSize) + .lessThan(lastId ?? ""))
         StreamFeedUIKitIOS.notificationFeed = NotificationFeed(feedID)
         
         StreamFeedUIKitIOS.notificationFeed?.get(typeOf: GetStream.EnrichedActivity<String, String, DefaultReaction>.self,
                                                  enrich: true,
-                                                 pagination: .limit(pageSize),
+                                                 pagination: pagination,
                                                  markOption: .none) { result in
             do {
                 let response = try result.get()
