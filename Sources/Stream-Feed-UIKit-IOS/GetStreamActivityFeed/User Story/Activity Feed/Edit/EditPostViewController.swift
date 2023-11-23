@@ -162,19 +162,23 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
     }
     
     private func setupProgressView() {
-        let margin: CGFloat = 8.0
-        let rect = CGRect(x: margin, y: 72.0, width: alertView.view.frame.width - margin * 2.0, height: 2.0)
-        progressView.frame = rect
+        progressView.translatesAutoresizingMaskIntoConstraints = false
         progressView.tintColor = view.tintColor
+
+        NSLayoutConstraint.activate([
+            progressView.leadingAnchor.constraint(equalTo: alertView.view.leadingAnchor, constant: 8),
+            progressView.trailingAnchor.constraint(equalTo: alertView.view.trailingAnchor, constant: -8),
+            progressView.topAnchor.constraint(equalTo: alertView.view.topAnchor, constant: 72),
+            progressView.heightAnchor.constraint(equalToConstant: 2)
+        ])
     }
-    
     private func presentProgressView() {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             present(self.alertView, animated: true) { [weak self] in
                 guard let self = self else { return }
-                self.setupProgressView()
                 self.alertView.view.addSubview(self.progressView)
+                self.setupProgressView()
             }
         }
     }
