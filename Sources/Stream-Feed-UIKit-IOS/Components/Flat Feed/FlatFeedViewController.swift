@@ -24,7 +24,7 @@ open class FlatFeedViewController<T: ActivityProtocol>: BaseFlatFeedViewControll
     /// A block type for the removing of an action.
     public typealias RemoveActivityAction = (_ activity: T) -> Void
     /// A banner view to show realtime updates. See `BannerView`.
-    public var bannerView: UIView & BannerViewProtocol = BannerView.make()
+//    public var bannerView: UIView & BannerViewProtocol = BannerView.make()
     private var subscriptionId: SubscriptionId?
     /// A flat feed presenter for the presentation logic.
     public var presenter: FlatFeedPresenter<T>?
@@ -39,6 +39,7 @@ open class FlatFeedViewController<T: ActivityProtocol>: BaseFlatFeedViewControll
     public var reportUserAction: ((String, String) -> Void)?
     public var shareTimeLinePostAction: ((String?) -> Void)?
     public var navigateToUserProfileAction: ((String) -> Void)?
+    public var navigateToPostDetails: ((String) -> Void)?
     public var entryPoint: GetStreamFeedEntryPoint = .timeline
     
     open override func viewDidLoad() {
@@ -46,10 +47,10 @@ open class FlatFeedViewController<T: ActivityProtocol>: BaseFlatFeedViewControll
         tableView.delegate = self
         reloadData()
         
-        bannerView.addTap { [weak self] in
-            $0.hide()
-            self?.reloadData()
-        }
+//        bannerView.addTap { [weak self] in
+//            $0.hide()
+//            self?.reloadData()
+//        }
     }
     
     open override func viewWillAppear(_ animated: Bool) {
@@ -75,7 +76,7 @@ open class FlatFeedViewController<T: ActivityProtocol>: BaseFlatFeedViewControll
     }
     
     open override func dataLoaded(_ error: Error?) {
-        bannerView.hide()
+//        bannerView.hide()
         tabBarItem.badgeValue = nil
         super.dataLoaded(error)
     }
@@ -241,7 +242,7 @@ extension FlatFeedViewController {
                     return
                 }
                 self.onPostUpdate?()
-                self.bannerView.show(text, in: self)
+//                self.bannerView.show(text, in: self)
             }
         }
     }

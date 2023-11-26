@@ -22,7 +22,7 @@ public final class EditPostPresenter {
     private weak var view: EditPostViewable?
     private var detectedURL: URL?
     private(set) var ogData: OGResponse?
-    
+    var petId: String?
     var images: [UIImage] = []
     
     private(set) lazy var dataDetectorWorker: DataDetectorWorker? = try? DataDetectorWorker(types: .link) { [weak self]  in
@@ -37,11 +37,12 @@ public final class EditPostPresenter {
         }
     }
     
-    init(flatFeed: FlatFeed, view: EditPostViewable, activity: Activity? = nil, imageCompression: Double) {
+    init(flatFeed: FlatFeed, view: EditPostViewable, activity: Activity? = nil, imageCompression: Double, petId: String?) {
         self.flatFeed = flatFeed
         self.view = view
         self.activity = activity
         self.imageCompression = imageCompression
+        self.petId = petId
     }
     
     func save(_ text: String?, completion: @escaping (_ error: Error?) -> Void) {
@@ -110,6 +111,10 @@ public final class EditPostPresenter {
         if let ogData = ogData {
             attachment.openGraphData = ogData
             activity.attachment = attachment
+        }
+        
+        if let petId = petId {
+            activity.petId = petId
         }
         
         flatFeed.add(activity) { completion($0.error) }

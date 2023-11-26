@@ -16,7 +16,9 @@ public struct StreamFeedUIKitIOS {
                                       autoLikeEnabled: Bool,
                                       reportUserAction: @escaping ((String, String) -> Void),
                                       shareTimeLinePostAction:  @escaping ((String?) -> Void),
-                                      navigateToUserProfileAction: @escaping ((String) -> Void)) -> ActivityFeedViewController {
+                                      navigateToUserProfileAction: @escaping ((String) -> Void),
+                                      navigateToPostDetails: @escaping ((String) -> Void)
+    ) -> ActivityFeedViewController {
         let timeLineVC = ActivityFeedViewController.fromBundledStoryboard()
         timeLineVC.isCurrentUser = isCurrentUser
         timeLineVC.autoLikeEnabled = autoLikeEnabled
@@ -26,6 +28,7 @@ public struct StreamFeedUIKitIOS {
         timeLineVC.reportUserAction = reportUserAction
         timeLineVC.shareTimeLinePostAction = shareTimeLinePostAction
         timeLineVC.navigateToUserProfileAction = navigateToUserProfileAction
+        timeLineVC.navigateToPostDetails = navigateToPostDetails
         timeLineVC.modalPresentationStyle = .fullScreen
         let nav = UINavigationController(rootViewController: timeLineVC)
         nav.modalPresentationStyle = .fullScreen
@@ -39,12 +42,13 @@ public struct StreamFeedUIKitIOS {
     }
 
 
-    public static func makeEditPostVC(imageCompression: Double) -> EditPostViewController {
+    public static func makeEditPostVC(imageCompression: Double, petId: String? = nil) -> EditPostViewController {
         guard let userFeedId: FeedId = FeedId(feedSlug: "user") else { return EditPostViewController() }
         let editPostViewController = EditPostViewController.fromBundledStoryboard()
         editPostViewController.presenter = EditPostPresenter(flatFeed: Client.shared.flatFeed(userFeedId),
             view: editPostViewController,
-            imageCompression: imageCompression)
+            imageCompression: imageCompression,
+            petId: petId)
         editPostViewController.modalPresentationStyle = .fullScreen
         return editPostViewController
     }

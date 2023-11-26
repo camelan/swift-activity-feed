@@ -241,7 +241,7 @@ open class DetailViewController<T: ActivityProtocol>: BaseFlatFeedViewController
         guard let userFeedId: FeedId = FeedId(feedSlug: "user") else { return }
         let imageCompression: Double = 0.5
         let editPostViewController = EditPostViewController.fromBundledStoryboard()
-        editPostViewController.presenter = EditPostPresenter(flatFeed: Client.shared.flatFeed(userFeedId),view: editPostViewController, activity: activity, imageCompression: imageCompression)
+        editPostViewController.presenter = EditPostPresenter(flatFeed: Client.shared.flatFeed(userFeedId), view: editPostViewController, activity: activity, imageCompression: imageCompression, petId: nil)
         editPostViewController.entryPoint = .editPost
         editPostViewController.modalPresentationStyle = .fullScreen
         
