@@ -19,7 +19,7 @@ public struct StreamFeedUIKitIOS {
                                       shareTimeLinePostAction:  @escaping ((String?) -> Void),
                                       navigateToUserProfileAction: @escaping ((String) -> Void),
                                       navigateToPostDetails: @escaping ((String) -> Void),
-                                      logErrorAction: @escaping ((String, String) -> Void)) {
+                                      logErrorAction: @escaping ((String, String) -> Void)) -> ActivityFeedViewController {
         let timeLineVC = ActivityFeedViewController.fromBundledStoryboard()
         timeLineVC.isCurrentUser = isCurrentUser
         timeLineVC.autoLikeEnabled = autoLikeEnabled
