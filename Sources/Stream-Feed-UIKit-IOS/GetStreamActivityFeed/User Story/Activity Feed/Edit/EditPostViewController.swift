@@ -28,8 +28,8 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
     var mediaPickerManager: MediaPicker?
     
     private var bag = Set<AnyCancellable>()
-    let alertView = UIAlertController(title: "", message: "", preferredStyle: .alert)
     let progressView = UIProgressView()
+    var alertView: CustomProgressAlertView?
     @IBOutlet weak var activityIndicatorBarButtonItem: UIBarButtonItem!
     @IBOutlet weak var galleryStackView: UIStackView!
     @IBOutlet weak var uploadImageStackView: UIStackView!
@@ -133,9 +133,9 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
                 presentProgressView()
             }
             let progressPrecentage = Float(self.compressedVideosCount) / Float(uploadedVideosItems.count)
-            self.alertView.title = "\("Preparing videos") [\(self.compressedVideosCount)/\(uploadedVideosItems.count)]"
-            self.alertView.message = "\(Int(progressPrecentage * 100))%"
-            self.progressView.setProgress(progressPrecentage, animated: true)
+            self.alertView?.titleLbl.text = "\("Preparing videos") [\(self.compressedVideosCount)/\(uploadedVideosItems.count)]"
+            self.alertView?.progressLbl.text = "\(Int(progressPrecentage * 100))%"
+            self.alertView?.progressView.setProgress(progressPrecentage, animated: true)
         }
     }
     
@@ -145,47 +145,57 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
             let mediaCount = presenter?.mediaItems.count ?? 0
             let uploadedCount = (presenter?.uploadedFilesCount ?? 0) + 1
             let filesString = (mediaCount > 1) ? "Files" : "File"
-            self.alertView.title = "Uploading Media \(filesString): \(uploadedCount)/\(mediaCount)"
-            self.alertView.message = "\(Int(progress * 100))%"
-            self.progressView.setProgress(Float(progress), animated: true)
+            self.alertView?.titleLbl.text = "Uploading Media \(filesString): \(uploadedCount)/\(mediaCount)"
+            self.alertView?.progressLbl.text = "\(Int(progress * 100))%"
+            self.alertView?.progressView.tintColor = view.tintColor
+            self.alertView?.progressView.setProgress(Float(progress), animated: true)
         }
     }
     
     private func setupAlertView() {
-        let cancel = UIAlertAction(title: "Cancel", style: .cancel) { [weak self] _ in
+        self.alertView = CustomProgressAlertView.instantiate()
+        self.alertView?.cancel = { [weak self] in
             guard let self = self else { return }
             self.presenter?.compressionCanceled = true
             self.presenter?.uploadTask?.cancel()
             self.dismiss(animated: true)
         }
-        alertView.addAction(cancel)
     }
     
-    private func setupProgressView() {
-        progressView.translatesAutoresizingMaskIntoConstraints = false
-        progressView.tintColor = view.tintColor
-
-        NSLayoutConstraint.activate([
-            progressView.leadingAnchor.constraint(equalTo: alertView.view.leadingAnchor, constant: 8),
-            progressView.trailingAnchor.constraint(equalTo: alertView.view.trailingAnchor, constant: -8),
-            progressView.topAnchor.constraint(equalTo: alertView.view.topAnchor, constant: 72),
-            progressView.heightAnchor.constraint(equalToConstant: 2)
-        ])
+    func layoutAlertView() {
+        UIView.animate(withDuration: 0.2, delay: 0, options: [.transitionCrossDissolve]) { [weak self] in
+            guard let self = self else { return }
+            guard let alert = self.alertView else {
+                return
+            }
+            alert.frame = CGRect(
+                origin: .zero,
+                size: CGSize(
+                    width: UIScreen.main.bounds.width,
+                    height: UIScreen.main.bounds.height
+                )
+            )
+            if let topView = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
+                topView.addSubview(alert)
+            } else {
+                self.view.addSubview(alert)
+            }
+        }
     }
+    
+    deinit {
+        alertView = nil
+    }
+    
     private func presentProgressView() {
         DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-            present(self.alertView, animated: true) { [weak self] in
-                guard let self = self else { return }
-                self.alertView.view.addSubview(self.progressView)
-                self.setupProgressView()
-            }
+            self?.layoutAlertView()
         }
     }
     
     private func dismissProgressView() {
         DispatchQueue.main.async { [weak self] in
-            self?.alertView.dismiss(animated: true)
+            self?.alertView?.removeFromSuperview()
         }
     }
     

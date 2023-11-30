@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="22155" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22131"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="gt-walsheim-light.ttf">
+            <string>GTWalsheimProLight</string>
+        </array>
+        <array key="gt-walsheim-medium.ttf">
+            <string>GTWalsheimProMedium</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="v3l-wO-hN6" customClass="CustomProgressAlertView" customModule="GetStreamActivityFeed">
+            <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="HbE-up-sz4">
+                    <rect key="frame" x="61.666666666666657" y="383.66666666666669" width="270" height="85"/>
+                    <subviews>
+                        <visualEffectView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="eS2-Ia-D6H">
+                            <rect key="frame" x="0.0" y="0.0" width="270" height="85"/>
+                            <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="JcG-Ri-LgJ">
+                                <rect key="frame" x="0.0" y="0.0" width="270" height="85"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="Hgs-Hr-lc2">
+                                        <rect key="frame" x="13.333333333333343" y="10" width="243.00000000000003" height="5"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="omo-Ft-NRp">
+                                                <rect key="frame" x="0.0" y="0.0" width="243" height="0.0"/>
+                                                <fontDescription key="fontDescription" name="GTWalsheimProMedium" family="GT Walsheim Pro" pointSize="17"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rMx-u4-yEV">
+                                                <rect key="frame" x="0.0" y="5" width="243" height="0.0"/>
+                                                <fontDescription key="fontDescription" name="GTWalsheimProLight" family="GT Walsheim Pro" pointSize="14"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                    </stackView>
+                                    <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="cQd-VI-CmL">
+                                        <rect key="frame" x="16" y="25" width="238" height="4"/>
+                                    </progressView>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="OEU-vk-wYR">
+                                        <rect key="frame" x="0.0" y="44" width="270" height="1"/>
+                                        <color key="backgroundColor" red="0.015686274510000001" green="0.0078431372550000003" blue="0.058823529409999999" alpha="0.080000000000000002" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="1" id="Xt2-BG-ERP"/>
+                                        </constraints>
+                                    </view>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3P4-YH-J3l">
+                                        <rect key="frame" x="13.333333333333343" y="50" width="243.00000000000003" height="30"/>
+                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="15"/>
+                                        <state key="normal" title="Cancel"/>
+                                        <userDefinedRuntimeAttributes>
+                                            <userDefinedRuntimeAttribute type="string" keyPath="localizedText" value="cancel"/>
+                                        </userDefinedRuntimeAttributes>
+                                        <connections>
+                                            <action selector="CancelAction:" destination="v3l-wO-hN6" eventType="touchUpInside" id="mAe-AM-S6f"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="Hgs-Hr-lc2" firstAttribute="top" secondItem="JcG-Ri-LgJ" secondAttribute="top" constant="10" id="57d-SE-8tG"/>
+                                    <constraint firstItem="Hgs-Hr-lc2" firstAttribute="width" secondItem="JcG-Ri-LgJ" secondAttribute="width" multiplier="0.9" id="5E5-Qs-VTI"/>
+                                    <constraint firstItem="3P4-YH-J3l" firstAttribute="width" secondItem="JcG-Ri-LgJ" secondAttribute="width" multiplier="0.9" id="B3w-gD-u6h"/>
+                                    <constraint firstItem="OEU-vk-wYR" firstAttribute="top" secondItem="cQd-VI-CmL" secondAttribute="bottom" constant="15" id="DDT-bQ-WQe"/>
+                                    <constraint firstItem="3P4-YH-J3l" firstAttribute="centerX" secondItem="JcG-Ri-LgJ" secondAttribute="centerX" id="E3d-l3-hIr"/>
+                                    <constraint firstItem="Hgs-Hr-lc2" firstAttribute="centerX" secondItem="JcG-Ri-LgJ" secondAttribute="centerX" id="LIM-bH-Pri"/>
+                                    <constraint firstAttribute="bottom" secondItem="3P4-YH-J3l" secondAttribute="bottom" constant="5" id="MFl-IP-Wrn"/>
+                                    <constraint firstAttribute="trailing" secondItem="cQd-VI-CmL" secondAttribute="trailing" constant="16" id="MQZ-6K-3TR"/>
+                                    <constraint firstItem="3P4-YH-J3l" firstAttribute="top" secondItem="OEU-vk-wYR" secondAttribute="bottom" constant="5" id="SAS-ep-JPV"/>
+                                    <constraint firstItem="cQd-VI-CmL" firstAttribute="top" secondItem="Hgs-Hr-lc2" secondAttribute="bottom" constant="10" id="UY6-Zb-IRR"/>
+                                    <constraint firstItem="OEU-vk-wYR" firstAttribute="width" secondItem="JcG-Ri-LgJ" secondAttribute="width" id="YUv-XB-iyT"/>
+                                    <constraint firstItem="OEU-vk-wYR" firstAttribute="centerX" secondItem="JcG-Ri-LgJ" secondAttribute="centerX" id="oKA-2J-uhP"/>
+                                    <constraint firstItem="cQd-VI-CmL" firstAttribute="centerX" secondItem="JcG-Ri-LgJ" secondAttribute="centerX" id="oL2-h8-p9B"/>
+                                    <constraint firstItem="cQd-VI-CmL" firstAttribute="leading" secondItem="JcG-Ri-LgJ" secondAttribute="leading" constant="16" id="oxR-Xi-SOs"/>
+                                </constraints>
+                            </view>
+                            <blurEffect style="systemThinMaterialLight"/>
+                        </visualEffectView>
+                    </subviews>
+                    <color key="backgroundColor" white="1" alpha="0.69999999999999996" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstAttribute="trailing" secondItem="eS2-Ia-D6H" secondAttribute="trailing" id="8eI-T5-w8Q"/>
+                        <constraint firstAttribute="bottom" secondItem="eS2-Ia-D6H" secondAttribute="bottom" id="Fax-Q5-F4f"/>
+                        <constraint firstAttribute="width" constant="270" id="JNg-ov-7Hl"/>
+                        <constraint firstItem="eS2-Ia-D6H" firstAttribute="leading" secondItem="HbE-up-sz4" secondAttribute="leading" id="cO8-Od-u3G"/>
+                        <constraint firstItem="eS2-Ia-D6H" firstAttribute="top" secondItem="HbE-up-sz4" secondAttribute="top" id="pVr-o1-epU"/>
+                    </constraints>
+                    <userDefinedRuntimeAttributes>
+                        <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                            <real key="value" value="15"/>
+                        </userDefinedRuntimeAttribute>
+                        <userDefinedRuntimeAttribute type="boolean" keyPath="masksToBounds" value="YES"/>
+                    </userDefinedRuntimeAttributes>
+                </view>
+            </subviews>
+            <viewLayoutGuide key="safeArea" id="XiZ-aF-iDD"/>
+            <color key="backgroundColor" white="0.66666666669999997" alpha="0.20000000000000001" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstItem="HbE-up-sz4" firstAttribute="centerY" secondItem="v3l-wO-hN6" secondAttribute="centerY" id="Weq-l2-e48"/>
+                <constraint firstItem="HbE-up-sz4" firstAttribute="centerX" secondItem="XiZ-aF-iDD" secondAttribute="centerX" id="itq-Sy-7e4"/>
+            </constraints>
+            <connections>
+                <outlet property="cancelBtn" destination="3P4-YH-J3l" id="CzS-5v-Yqi"/>
+                <outlet property="progressLbl" destination="rMx-u4-yEV" id="OQz-tr-yma"/>
+                <outlet property="progressView" destination="cQd-VI-CmL" id="RVt-18-Ke1"/>
+                <outlet property="titleLbl" destination="omo-Ft-NRp" id="BWV-gb-Vbx"/>
+            </connections>
+            <point key="canvasLocation" x="131.8840579710145" y="116.51785714285714"/>
+        </view>
+    </objects>
+</document>
