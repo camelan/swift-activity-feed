@@ -148,7 +148,7 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
             self.alertView?.titleLbl.text = "Uploading Media \(filesString): \(uploadedCount)/\(mediaCount)"
             self.alertView?.progressLbl.text = "\(Int(progress * 100))%"
             self.alertView?.progressView.tintColor = view.tintColor
-            self.alertView?.progressView.setProgress(Float(progress), animated: true)
+            self.alertView?.progressView.setProgress(Float(progress), animated: false)
         }
     }
     
