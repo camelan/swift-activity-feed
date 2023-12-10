@@ -24,7 +24,7 @@ extension UIImageView {
             .transition(.fade(0.2)),
             .cacheOriginalImage,
             .loadDiskFileSynchronously]
-        if isGIF == false {
+        if isGIF == false || url.absoluteString.contains(".gif") == false {
             imageOptions.insert(.processor(DownsamplingImageProcessor(size: downSampleSize ?? self.frame.size)), at: 0)
         }
         self.kf.cancelDownloadTask()
