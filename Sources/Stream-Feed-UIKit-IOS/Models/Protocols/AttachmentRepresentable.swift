@@ -23,13 +23,23 @@ extension AttachmentRepresentable {
     }
     
     /// Returns a list of image URl's froim the attachment. See `ActivityAttachment`.
-    public func attachmentImageURLs(timelineVideoEnabled: Bool) -> [UploadedMediaItem]? {
-        if let mediaItems = media, mediaItems.count > 0, timelineVideoEnabled {
-            var updatedMediaItem: [UploadedMediaItem] = mediaItems
-            updatedMediaItem.removeFirst()
-            return updatedMediaItem.count > 0 ? mediaItems : nil
-        } else if let imageURLs = attachment?.imageURLs, imageURLs.count > 0 {
-            return imageURLs.map { UploadedMediaItem(mediaType: "image", imageURL: $0, videoURL: nil, thumbnailURL: nil) }
+    public func attachmentImageURLs(firstImageURL: URL?, timelineVideoEnabled: Bool) -> [UploadedMediaItem]? {
+        if let mediaItems = media, !mediaItems.isEmpty, timelineVideoEnabled {
+            let updatedMediaItems = mediaItems.dropFirst()
+            return !updatedMediaItems.isEmpty ? Array(mediaItems) : nil
+        } else if let imageURLs = attachment?.imageURLs, !imageURLs.isEmpty {
+            let allImagesURLs = imageURLs.map {
+                UploadedMediaItem(mediaType: "image", imageURL: $0, videoURL: nil, thumbnailURL: nil)
+            }
+            if let firstImageURL = firstImageURL {
+                let firstImageItem = UploadedMediaItem(mediaType: "image",
+                                                       imageURL: firstImageURL,
+                                                       videoURL: nil,
+                                                       thumbnailURL: nil)
+                return [firstImageItem] + allImagesURLs
+            }
+            
+            return allImagesURLs
         }
         return nil
     }

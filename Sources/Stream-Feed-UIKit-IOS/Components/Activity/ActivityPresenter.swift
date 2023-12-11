@@ -93,7 +93,8 @@ extension ActivityPresenter {
         var count = 2 + (withReactions ? 1 : 0)
         
         if let originalActivityAttachment = originalActivityAttachment {
-            if originalActivityAttachment.attachmentImageURLs(timelineVideoEnabled: timelineVideoEnabled) != nil {
+            let object = originalActivity.object as? ActivityObject
+            if originalActivityAttachment.attachmentImageURLs(firstImageURL: object?.imageURL, timelineVideoEnabled: timelineVideoEnabled) != nil {
                 count += 1
             }
             
@@ -114,7 +115,8 @@ extension ActivityPresenter {
         case 0:
             return .activity
         case (cellsCount - 3 - reactionsCellCount):
-            if let mediaItems = originalActivityAttachment?.attachmentImageURLs(timelineVideoEnabled: timelineVideoEnabled) {
+            let object = originalActivity.object as? ActivityObject
+            if let mediaItems = originalActivityAttachment?.attachmentImageURLs(firstImageURL: object?.imageURL, timelineVideoEnabled: timelineVideoEnabled) {
                 return .attachmentImages(mediaItems)
             }
         case (cellsCount - 2 - reactionsCellCount):
@@ -122,7 +124,8 @@ extension ActivityPresenter {
                 return .attachmentOpenGraphData(ogData)
             }
             
-            if let mediaItems = originalActivityAttachment?.attachmentImageURLs(timelineVideoEnabled: timelineVideoEnabled) {
+            let object = originalActivity.object as? ActivityObject
+            if let mediaItems = originalActivityAttachment?.attachmentImageURLs(firstImageURL: object?.imageURL, timelineVideoEnabled: timelineVideoEnabled) {
                 return .attachmentImages(mediaItems)
             }
         case (cellsCount - 2) where reactionsCellCount > 0:
