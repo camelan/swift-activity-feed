@@ -23,8 +23,9 @@ extension UIImageView {
             .scaleFactor(UIScreen.main.scale),
             .transition(.fade(0.2)),
             .cacheOriginalImage,
-            .loadDiskFileSynchronously]
-        if isGIF == false || url.absoluteString.contains(".gif") == false {
+            .alsoPrefetchToMemory
+        ]
+        if isGIF == false {
             imageOptions.insert(.processor(DownsamplingImageProcessor(size: downSampleSize ?? self.frame.size)), at: 0)
         }
         self.kf.cancelDownloadTask()
@@ -45,7 +46,8 @@ extension UIImageView {
             .scaleFactor(UIScreen.main.scale),
             .transition(.fade(0.2)),
             .cacheOriginalImage,
-            .loadDiskFileSynchronously]
+            .alsoPrefetchToMemory
+        ]
         if isGIF == false {
             imageOptions.insert(.processor(DownsamplingImageProcessor(size: downSampleSize ?? self.frame.size)), at: 0)
         }
@@ -65,7 +67,8 @@ extension UIButton {
             .scaleFactor(UIScreen.main.scale),
             .transition(.fade(0.2)),
             .cacheOriginalImage,
-            .loadDiskFileSynchronously]
+            .alsoPrefetchToMemory
+        ]
         if isGIF == false {
             imageOptions.insert(.processor(DownsamplingImageProcessor(size: self.frame.size)), at: 0)
         }
