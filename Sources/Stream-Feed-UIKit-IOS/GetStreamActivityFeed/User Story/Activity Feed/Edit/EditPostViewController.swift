@@ -9,6 +9,7 @@
 import UIKit
 import GetStream
 import Nuke
+import Combine
 
 enum EditTimelinePostEntryPoint {
     case editPost
@@ -22,7 +23,13 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
     var presenter: EditPostPresenter?
     var entryPoint: EditTimelinePostEntryPoint = .newPost
     var keyboardIsShown: Bool = false
+    var compressedVideosCount = 0
+    var uploadedMediaCount = 0
+    var mediaPickerManager: MediaPicker?
     
+    private var bag = Set<AnyCancellable>()
+    let progressView = UIProgressView()
+    var alertView: CustomProgressAlertView?
     @IBOutlet weak var activityIndicatorBarButtonItem: UIBarButtonItem!
     @IBOutlet weak var galleryStackView: UIStackView!
     @IBOutlet weak var uploadImageStackView: UIStackView!
@@ -57,6 +64,7 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
     
     public override func viewDidLoad() {
         super.viewDidLoad()
+        setButtonText()
         setupUserData()
         setupTextView()
         setupTableView()
@@ -69,6 +77,126 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
         setupNavigationBarItems()
         topMainView.frame.size.height = tableView.frame.height - galleryStackView.frame.height
         setPostData()
+        setupAlertView()
+        bind()
+    }
+    
+    private func setButtonText() {
+        let buttonTitle = presenter?.timeLineVideoEnabled ?? false ? "Photo/Video library" : "Photo library"
+        addImageTextBtn.setTitle(buttonTitle, for: .normal)
+    }
+    
+    private func bind() {
+        presenter?.videoCompressionSubject
+            .dropFirst()
+            .sink { [weak self] compressionResult in
+                guard let self = self else { return }
+                switch compressionResult {
+                case .onSuccess(_):
+                    break
+                case .onStart:
+                    guard let uploadedVideosItems = presenter?.mediaItems.filter({ $0.mediaType == .video }), uploadedVideosItems.count > 0 else { return }
+                    self.compressedVideosCount += 1
+                    self.showAlertWithProgressView()
+                case .onCancelled, .onFailure(_):
+                    self.dismiss(animated: true)
+                
+                }
+            }
+            .store(in: &bag)
+        
+        presenter?.filesProgressSubject
+            .dropFirst()
+            .sink(receiveValue: { [weak self] uploadStatus in
+                guard let self else { return }
+                switch uploadStatus {
+                case .onStart:
+                    showMediaUploadProgressView(progress: 0.0)
+                    uploadedMediaCount += 1
+                    if uploadedMediaCount == 1 && compressedVideosCount == 0 {
+                        presentProgressView()
+                    }
+                case .Uploading(let progress):
+                    self.showMediaUploadProgressView(progress: progress)
+                case .Uploaded, .Error, .Cancelled:
+                    self.dismissProgressView()
+                }
+            }).store(in: &bag)
+    }
+    
+    private func showAlertWithProgressView() {
+        guard let uploadedVideosItems = presenter?.mediaItems.filter({ $0.mediaType == .video }), uploadedVideosItems.count > 0 else { return
+        }
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            if compressedVideosCount == 1 {
+                presentProgressView()
+            }
+            let progressPrecentage = Float(self.compressedVideosCount) / Float(uploadedVideosItems.count)
+            self.alertView?.titleLbl.text = "\("Preparing videos") [\(self.compressedVideosCount)/\(uploadedVideosItems.count)]"
+            self.alertView?.progressLbl.text = "\(Int(progressPrecentage * 100))%"
+            self.alertView?.progressView.setProgress(progressPrecentage, animated: true)
+        }
+    }
+    
+    private func showMediaUploadProgressView(progress: Double) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            let mediaCount = presenter?.mediaItems.count ?? 0
+            let uploadedCount = (presenter?.uploadedFilesCount ?? 0) + 1
+            let filesString = (mediaCount > 1) ? "Files" : "File"
+            self.alertView?.titleLbl.text = "Uploading Media \(filesString): \(uploadedCount)/\(mediaCount)"
+            self.alertView?.progressLbl.text = "\(Int(progress * 100))%"
+            self.alertView?.progressView.tintColor = view.tintColor
+            self.alertView?.progressView.setProgress(Float(progress), animated: false)
+        }
+    }
+    
+    private func setupAlertView() {
+        self.alertView = CustomProgressAlertView.instantiate()
+        self.alertView?.cancel = { [weak self] in
+            guard let self = self else { return }
+            self.presenter?.compressionCanceled = true
+            self.presenter?.uploadTask?.cancel()
+            self.dismiss(animated: true)
+        }
+    }
+    
+    func layoutAlertView() {
+        UIView.animate(withDuration: 0.2, delay: 0, options: [.transitionCrossDissolve]) { [weak self] in
+            guard let self = self else { return }
+            guard let alert = self.alertView else {
+                return
+            }
+            alert.frame = CGRect(
+                origin: .zero,
+                size: CGSize(
+                    width: UIScreen.main.bounds.width,
+                    height: UIScreen.main.bounds.height
+                )
+            )
+            if let topView = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
+                topView.addSubview(alert)
+            } else {
+                self.view.addSubview(alert)
+            }
+        }
+    }
+    
+    deinit {
+        alertView = nil
+    }
+    
+    private func presentProgressView() {
+        DispatchQueue.main.async { [weak self] in
+            self?.layoutAlertView()
+        }
+    }
+    
+    private func dismissProgressView() {
+        DispatchQueue.main.async { [weak self] in
+            self?.alertView?.removeFromSuperview()
+        }
     }
     
     private func setPostData() {
@@ -120,17 +248,19 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
         if entryPoint == .editPost {
             presenter?.updateActivity(with: textView.text)
         } else {
-            presenter?.save(validatedText()) { [weak self] error in
-                guard let self = self else {
-                    return
-                }
-                
-                self.activityIndicator.stopAnimating()
-                
-                if let error = error {
-                    // self.showErrorAlert(error)
-                } else {
-                    backBtnPressed(UIBarButtonItem())
+            Task {
+                await presenter?.save(validatedText()) { [weak self] error in
+                    guard let self = self else {
+                        return
+                    }
+                    
+                    self.activityIndicator.stopAnimating()
+                    
+                    if let error = error {
+                        // self.showErrorAlert(error)
+                    } else {
+                        backBtnPressed(UIBarButtonItem())
+                    }
                 }
             }
         }
@@ -177,34 +307,85 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
     }
     
     private func addImageAction() {
-            view.endEditing(true)
-            pickImage(title: "Add a photo") { [weak self] info, status, _ in
-                guard let self else { return }
-                if let originalImage = info[.originalImage] as? UIImage {
-                    self.handlePickedImage(image: originalImage)
-                } else if let editedImage = info[.editedImage] as? UIImage {
-                    self.handlePickedImage(image: editedImage)
-                } else if status != .authorized {
-                    print("❌ Photos authorization status: ", status)
-                }
-            }
+        view.endEditing(true)
+        let timeLineVideoEnabled = presenter?.timeLineVideoEnabled ?? false
+        let alertTitle = timeLineVideoEnabled ? "Add a photo/video" : "Add a photo"
+        let alertBody = timeLineVideoEnabled ? "Select a photo/video source" : "Select a photo source"
+        let actionTitle = timeLineVideoEnabled ? "Photo/Video library" : "Photo library"
+        
+        let alert = UIAlertController(title: alertTitle, message: alertBody, preferredStyle: .actionSheet)
+        
+        if UIImagePickerController.isSourceTypeAvailable(.photoLibrary) {
+            alert.addAction(UIAlertAction(title: actionTitle, style: .default, handler: { [weak self] _ in
+                self?.presentGalleryMediaPicker()
+            }))
+        } else {
+            presenter?.logErrorAction?("Photo/Video library source is not available.", "")
+        }
+        
+        if UIImagePickerController.isSourceTypeAvailable(.camera) {
+            alert.addAction(UIAlertAction(title: "Camera", style: .default, handler: { [weak self] _ in
+                self?.presentCameraMediaPicker()
+            }))
+        } else {
+            presenter?.logErrorAction?("Camera source is not available.", "")
+        }
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in }))
+        
+        present(alert, animated: true)
     }
     
-    private func handlePickedImage(image: UIImage) {
-        self.presenter?.images.insert(image, at: 0)
+    private func presentGalleryMediaPicker() {
+        mediaPickerManager = makeMediaPicker()
+        mediaPickerManager?.openGallery()
+    }
+    
+    private func presentCameraMediaPicker() {
+        mediaPickerManager = makeMediaPicker()
+        mediaPickerManager?.openCamera()
+    }
+    
+    private func makeMediaPicker() -> MediaPicker {
+        let timelineVideoEnabled = presenter?.timeLineVideoEnabled ?? false
+        let videoMaximumDurationInMinutes = presenter?.videoMaximumDurationInMinutes ?? 2.0
+        let logErrorAction = presenter?.logErrorAction
+        let mediaPicker = MediaPicker(presentationController: self,
+                                         delegate: self,
+                                         videoMaximumDurationInMinutes: videoMaximumDurationInMinutes,
+                                         timelineVideoEnabled: timelineVideoEnabled,
+                                         logErrorAction: logErrorAction)
+        mediaPicker.showAlertWithErrorMsgAction = { [weak self] errorMsg in
+            self?.showAlertWith(message: errorMsg)
+        }
+        
+        return mediaPicker
+    }
+    
+    private func showAlertWith(message: String) {
+        let okAction: AlertAction = ("Ok", .cancel, {}, true)
+        
+        DispatchQueue.mainAsyncIfNeeded { [weak self] in
+            self?.alertWithAction(title: "Error", message: message, alertStyle: .alert, tintColor: nil, actions: [okAction])
+        }
+    }
+    
+    private func handlePickedMedia(mediaItems: [MediaItem]) {
+        guard let firstItem = mediaItems.first else { return }
+        self.presenter?.mediaItems.insert(firstItem, at: 0)
         self.updateCollectionView()
         self.checkUploadedImageLimit()
     }
     
     private func checkUploadedImageLimit() {
-        let maximumLimit = self.presenter?.images.count ?? 0 >= 6
+        let maximumLimit = self.presenter?.mediaItems.count ?? 0 >= 6
         self.uploadImageStackView.isUserInteractionEnabled = maximumLimit ? false : true
         self.uploadImageStackView.alpha = maximumLimit ? 0.5 : 1.0
     }
     
-    private func removeImage(at indexPath: IndexPath) {
-        if let presenter = presenter, indexPath.item < presenter.images.count {
-            presenter.images.remove(at: indexPath.item)
+    private func removeSelectedMediaItem(at indexPath: IndexPath) {
+        if let presenter = presenter, indexPath.item < presenter.mediaItems.count {
+            presenter.mediaItems.remove(at: indexPath.item)
             updateCollectionView()
         }
     }
@@ -226,8 +407,8 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
         guard let presenter = presenter else {
             return
         }
-        navigationItem.rightBarButtonItem?.isEnabled = presenter.images.count > 0 || validatedText() != nil
-        navigationItem.rightBarButtonItem?.customView?.alpha = presenter.images.count > 0 || validatedText() != nil ? 1 : 0.5
+        navigationItem.rightBarButtonItem?.isEnabled = presenter.mediaItems.count > 0 || validatedText() != nil
+        navigationItem.rightBarButtonItem?.customView?.alpha = presenter.mediaItems.count > 0 || validatedText() != nil ? 1 : 0.5
     }
 }
 
@@ -330,6 +511,7 @@ extension EditPostViewController: UICollectionViewDataSource {
     private func setupCollectionView() {
         collectionViewHeightConstraint.constant = 0
         collectionView.register(UINib(nibName: "AddingImageCollectionViewCell", bundle: .module), forCellWithReuseIdentifier: "AddingImageCollectionViewCell")
+        collectionView.register(UINib(nibName: "VideoCell", bundle: .module), forCellWithReuseIdentifier: "VideoCell")
         collectionView.dataSource = self
     }
     
@@ -337,7 +519,7 @@ extension EditPostViewController: UICollectionViewDataSource {
         guard let presenter = presenter else {
             return
         }
-        collectionViewHeightConstraint.constant = presenter.images.count > 0 ? AddingImageCollectionViewCell.height : 0
+        collectionViewHeightConstraint.constant = presenter.mediaItems.count > 0 ? AddingImageCollectionViewCell.height : 0
         DispatchQueue.main.async { [weak self] in
             self?.collectionView.reloadData()
             self?.collectionView.layoutIfNeeded()
@@ -346,22 +528,40 @@ extension EditPostViewController: UICollectionViewDataSource {
     }
     
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return presenter?.images.count ?? 0
+        return presenter?.mediaItems.count ?? 0
     }
     
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(for: indexPath) as AddingImageCollectionViewCell
-        guard let selectedImage = presenter?.images[indexPath.item] else {
-            return cell
-        }
-        cell.setImage(image: selectedImage)
-  
-        cell.removeButton.addTap { [weak self] _ in
-            guard let self else { return }
-            self.removeImage(at: indexPath)
-            self.checkUploadedImageLimit()
-        }
+        guard let mediaItem = presenter?.mediaItems[indexPath.item] else { return UICollectionViewCell() }
         
-        return cell
+        switch mediaItem.mediaType {
+        case .image:
+            let imageCell = collectionView.dequeueReusableCell(for: indexPath) as AddingImageCollectionViewCell
+            guard let selectedImage = mediaItem.image else {
+                return imageCell
+            }
+            imageCell.removeButton.addTap { [weak self] _ in
+                guard let self else { return }
+                self.removeSelectedMediaItem(at: indexPath)
+                self.checkUploadedImageLimit()
+            }
+            imageCell.setImage(image: selectedImage)
+            
+            return imageCell
+        case .video:
+            let videoCell = collectionView.dequeueReusableCell(for: indexPath) as VideoCell
+            videoCell.config(streamingURL: mediaItem.videoURL?.absoluteString)
+            videoCell.removeButton.addTap { [weak self] _ in
+                guard let self else { return }
+                self.removeSelectedMediaItem(at: indexPath)
+                self.checkUploadedImageLimit()
+            }
+            return videoCell
+        }
+    }
+}
+extension EditPostViewController: PHImagePickerDelegate {
+    func didSelect(mediaItems: [MediaItem]) {
+        handlePickedMedia(mediaItems: mediaItems)
     }
 }

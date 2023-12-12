@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="22155" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21679"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22131"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -189,7 +189,7 @@
                                                 <rect key="frame" x="60" y="0.0" width="315" height="44"/>
                                                 <fontDescription key="fontDescription" name="GTWalsheimProRegular" family="GT Walsheim Pro" pointSize="16"/>
                                                 <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
-                                                <state key="normal" title="Photo library">
+                                                <state key="normal" title="Photo/Video library">
                                                     <color key="titleColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 </state>
                                             </button>
@@ -247,16 +247,103 @@
             </objects>
             <point key="canvasLocation" x="1855" y="-240"/>
         </scene>
+        <!--Media Gallery View Controller-->
+        <scene sceneID="nVf-Kd-v9Z">
+            <objects>
+                <viewController storyboardIdentifier="MediaGalleryViewController" id="ZvZ-pB-27A" customClass="MediaGalleryViewController" customModule="GetStreamActivityFeed" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="LmL-iF-oP2">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="X3R-mg-4Q7">
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                                <subviews>
+                                    <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="a7g-ee-shu">
+                                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <collectionViewFlowLayout key="collectionViewLayout" scrollDirection="horizontal" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="0cr-Sm-BYf">
+                                            <size key="itemSize" width="128" height="128"/>
+                                            <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                            <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                            <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                        </collectionViewFlowLayout>
+                                        <cells/>
+                                    </collectionView>
+                                </subviews>
+                                <color key="backgroundColor" name="Black"/>
+                                <constraints>
+                                    <constraint firstAttribute="bottom" secondItem="a7g-ee-shu" secondAttribute="bottom" id="CHJ-qs-aow"/>
+                                    <constraint firstItem="a7g-ee-shu" firstAttribute="top" secondItem="X3R-mg-4Q7" secondAttribute="top" id="CkA-aS-12x"/>
+                                    <constraint firstAttribute="trailing" secondItem="a7g-ee-shu" secondAttribute="trailing" id="f6n-bQ-F7s"/>
+                                    <constraint firstItem="a7g-ee-shu" firstAttribute="leading" secondItem="X3R-mg-4Q7" secondAttribute="leading" id="nbq-wD-1Zq"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                                        <real key="value" value="0.0"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </view>
+                            <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="VcF-J0-Ut9" customClass="MediaCustomPageControl" customModule="GetStreamActivityFeed">
+                                <rect key="frame" x="20" y="642" width="335" height="20"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="tintColor" red="0.015686274510000001" green="0.0078431372550000003" blue="0.058823529409999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="20" id="N8c-we-YMi"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="color" keyPath="circleColor">
+                                        <color key="value" name="White"/>
+                                    </userDefinedRuntimeAttribute>
+                                    <userDefinedRuntimeAttribute type="color" keyPath="circleBackgroundColor">
+                                        <color key="value" name="appLightGrey"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </view>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="fk7-FC-MVl"/>
+                        <color key="backgroundColor" name="Black"/>
+                        <constraints>
+                            <constraint firstItem="fk7-FC-MVl" firstAttribute="bottom" secondItem="X3R-mg-4Q7" secondAttribute="bottom" id="1KQ-vO-Iqd"/>
+                            <constraint firstItem="X3R-mg-4Q7" firstAttribute="top" secondItem="LmL-iF-oP2" secondAttribute="top" id="2qU-ZI-rHh"/>
+                            <constraint firstItem="X3R-mg-4Q7" firstAttribute="leading" secondItem="fk7-FC-MVl" secondAttribute="leading" id="D1z-dO-dNu"/>
+                            <constraint firstItem="fk7-FC-MVl" firstAttribute="trailing" secondItem="X3R-mg-4Q7" secondAttribute="trailing" id="Eya-E7-oE3"/>
+                            <constraint firstItem="VcF-J0-Ut9" firstAttribute="leading" secondItem="fk7-FC-MVl" secondAttribute="leading" constant="20" id="RRJ-0Y-dKu"/>
+                            <constraint firstItem="VcF-J0-Ut9" firstAttribute="centerX" secondItem="fk7-FC-MVl" secondAttribute="centerX" id="Z3o-4i-Qhl"/>
+                            <constraint firstItem="fk7-FC-MVl" firstAttribute="bottom" secondItem="VcF-J0-Ut9" secondAttribute="bottom" constant="5" id="dOv-Mm-vqU"/>
+                            <constraint firstItem="fk7-FC-MVl" firstAttribute="trailing" secondItem="VcF-J0-Ut9" secondAttribute="trailing" constant="20" id="nBn-kf-sx0"/>
+                        </constraints>
+                        <userDefinedRuntimeAttributes>
+                            <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                                <real key="value" value="0.0"/>
+                            </userDefinedRuntimeAttribute>
+                        </userDefinedRuntimeAttributes>
+                    </view>
+                    <connections>
+                        <outlet property="innerContainerView" destination="X3R-mg-4Q7" id="LfC-Gk-1Nn"/>
+                        <outlet property="mediaCollectionView" destination="a7g-ee-shu" id="sMd-LG-pdX"/>
+                        <outlet property="mediaPageControl" destination="VcF-J0-Ut9" id="JDA-mw-Fz8"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="7pG-42-KBM" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1854" y="503"/>
+        </scene>
     </scenes>
     <resources>
         <image name="close_icon" width="23" height="23"/>
         <image name="image_icon" width="32" height="32"/>
         <image name="user_icon" width="24" height="24"/>
+        <namedColor name="Black">
+            <color red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
         <namedColor name="Chat Button Color">
             <color red="0.29411764705882354" green="0.13725490196078433" blue="0.84705882352941175" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="White">
             <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="appLightGrey">
+            <color red="0.55294117647058827" green="0.54509803921568623" blue="0.54509803921568623" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

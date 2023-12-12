@@ -24,15 +24,14 @@ open class PostHeaderTableViewCell: BaseTableViewCell {
     @IBOutlet private(set) weak var photoImageView: UIImageView!
     @IBOutlet public weak var postSettingsButton: UIButton!
     @IBOutlet public weak var ImagePostButton: UIButton!
+    @IBOutlet public weak var playVideoView: UIView!
     
-    var allImageURLs: [URL] = []
     var activityID: String = ""
-    var postImageURL: URL?
     var postSettingsTapped: ((Activity) -> Void)?
-    var photoImageTapped: ((URL) -> Void)?
+    var photoImageTapped: (([UploadedMediaItem], UploadedMediaItem) -> Void)?
     var profileImageTapped: ((String) -> Void)?
-    var sendImageURLValues: ((URL) -> Void)?
     var currentActivity: Activity?
+    var timelineVideoEnabled: Bool = false
     
     public var repost: String? {
         get {
@@ -57,12 +56,24 @@ open class PostHeaderTableViewCell: BaseTableViewCell {
         repostInfoLabel.text = nil
         repostInfoStackView.isHidden = true
         messageLabel.text = nil
+        photoImageView.image = nil
+        currentActivity = nil
         messageBottomConstraint.priority = .defaultHigh + 1
+        playVideoView.isHidden = false
+        timelineVideoEnabled = false
     }
     
-    public func setActivity(with activity: Activity) {
-        self.currentActivity = activity
-        self.activityID = activity.id
+    public func setActivity(with activity: Activity, timelineVideoEnabled: Bool) {
+        currentActivity = activity
+        self.timelineVideoEnabled = timelineVideoEnabled
+
+        guard let currentActivity = currentActivity, currentActivity.media?.count ?? 0 > 0, timelineVideoEnabled else {
+            playVideoView.isHidden = true
+            return
+        }
+        guard let firstMediaItem = currentActivity.media?.first else { return }
+        let mediaType = firstMediaItem.getMediaType()
+        playVideoView.isHidden = mediaType == .video ? false : true
     }
     
     public func updateAvatar(with image: UIImage?) {
@@ -88,8 +99,6 @@ open class PostHeaderTableViewCell: BaseTableViewCell {
     public func updatePhoto(with url: URL) {
         messageBottomConstraint.priority = .defaultLow
         photoImageView.isHidden = false
-        postImageURL = url
-        sendImageURLValues?(url)
         loadImage(with: url)
     }
     
@@ -107,8 +116,9 @@ open class PostHeaderTableViewCell: BaseTableViewCell {
     }
     
     @IBAction func photoImageTapped(_ sender: UIButton) {
-        guard let postImageURL = postImageURL else { return }
-        photoImageTapped?(postImageURL)
+        guard let mediaItems = currentActivity?.mappedMediaItems(timelineVideoEnabled: timelineVideoEnabled) else { return }
+        guard let firstMediaItem = mediaItems.first else { return }
+        photoImageTapped?(mediaItems, firstMediaItem)
     }
     
     @IBAction func profileImageTapped(_ sender: UIButton) {
@@ -142,7 +152,17 @@ extension PostHeaderTableViewCell {
             case .text(let text):
                 messageLabel.text = text
             case .image(let url):
-                updatePhoto(with: url)
+                guard let currentActivity = currentActivity, currentActivity.media?.count ?? 0 > 0 else {
+                    updatePhoto(with: url)
+                    return
+                }
+                guard let firstMediaItem = currentActivity.media?.first else { return }
+                guard let mediaURLString = firstMediaItem.getMediaURL() else {
+                    updatePhoto(with: url)
+                    return
+                }
+                let mediaURL = URL(string: mediaURLString)!
+                updatePhoto(with: mediaURL)
             case .following(let user):
                 messageLabel.text = "Follow to \(user.name)"
             default:

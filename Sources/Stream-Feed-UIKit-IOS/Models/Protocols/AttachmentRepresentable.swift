@@ -13,6 +13,7 @@ import UIKit
 public protocol AttachmentRepresentable {
     /// An attachment. See `ActivityAttachment`.
     var attachment: ActivityAttachment? { get }
+    var media: [UploadedMediaItem]? { get }
 }
 
 extension AttachmentRepresentable {
@@ -22,11 +23,24 @@ extension AttachmentRepresentable {
     }
     
     /// Returns a list of image URl's froim the attachment. See `ActivityAttachment`.
-    public func attachmentImageURLs() -> [URL]? {
-        if let imageURLs = attachment?.imageURLs, imageURLs.count > 0 {
-            return imageURLs
+    public func attachmentImageURLs(firstImageURL: URL?, timelineVideoEnabled: Bool) -> [UploadedMediaItem]? {
+        if let mediaItems = media, !mediaItems.isEmpty, timelineVideoEnabled {
+            let updatedMediaItems = mediaItems.dropFirst()
+            return !updatedMediaItems.isEmpty ? Array(mediaItems) : nil
+        } else if let imageURLs = attachment?.imageURLs, !imageURLs.isEmpty {
+            let allImagesURLs = imageURLs.map {
+                UploadedMediaItem(mediaType: "image", imageURL: $0, videoURL: nil, thumbnailURL: nil)
+            }
+            if let firstImageURL = firstImageURL {
+                let firstImageItem = UploadedMediaItem(mediaType: "image",
+                                                       imageURL: firstImageURL,
+                                                       videoURL: nil,
+                                                       thumbnailURL: nil)
+                return [firstImageItem] + allImagesURLs
+            }
+            
+            return allImagesURLs
         }
-        
         return nil
     }
 }

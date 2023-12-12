@@ -189,13 +189,20 @@ public final class ImageGalleryCollectionViewCell: UICollectionViewCell, Reusabl
 extension UIViewController {
     
     /// Presents the image gallery with a given image URL's.
-    public func showImageGallery(with imageURLs: [URL]?, animated: Bool = true) {
-        guard let imageURLs = imageURLs else {
+    public func showImageGallery(with mediaItems: [UploadedMediaItem]?,
+                                 selectedMediaItem: UploadedMediaItem,
+                                 animated: Bool = true, logErrorAction: ((String, String) -> ())?) {
+        guard let mediaItems = mediaItems else {
             return
         }
         
-        let imageGalleryViewController = ImageGalleryViewController()
-        imageGalleryViewController.imageURLs = imageURLs
-        present(imageGalleryViewController, animated: animated)
+        let mediaGalleryViewController = MediaGalleryViewController.fromBundledStoryboard()
+        mediaGalleryViewController.additionalMedia = mediaItems
+        mediaGalleryViewController.selectedMediaItem = selectedMediaItem
+        mediaGalleryViewController.logErrorAction = logErrorAction
+        mediaGalleryViewController.modalPresentationStyle = .overFullScreen
+        mediaGalleryViewController.modalTransitionStyle = .crossDissolve
+        
+        present(mediaGalleryViewController, animated: animated)
     }
 }

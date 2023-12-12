@@ -30,10 +30,12 @@ public final class FlatFeedPresenter<T: ActivityProtocol>: PaginatorProtocol {
     /// Reaction types for activities. See `ActivityPresenterReactionTypes`.
     public var reactionTypes: ActivityPresenterReactionTypes = []
     public var isPrefetching = false
+    var timelineVideoEnabled: Bool = false
     
-    public init(flatFeed: FlatFeed, reactionTypes: ActivityPresenterReactionTypes = []) {
+    public init(flatFeed: FlatFeed, reactionTypes: ActivityPresenterReactionTypes = [], timelineVideoEnabled: Bool = false) {
         self.flatFeed = flatFeed
         self.reactionTypes = reactionTypes
+        self.timelineVideoEnabled = timelineVideoEnabled
         flatFeed.callbackQueue = DispatchQueue.init(label: "io.getstream.FlatFeedPresenter", qos: .userInitiated)
         reactionPresenter = ReactionPresenter()
         subscriptionPresenter = SubscriptionPresenter(feed: flatFeed)
@@ -65,7 +67,7 @@ public final class FlatFeedPresenter<T: ActivityProtocol>: PaginatorProtocol {
                 self.items.append(contentsOf: response.results
                     .map({ ActivityPresenter(activity: $0,
                                              reactionPresenter: self.reactionPresenter,
-                                             reactionTypes: self.reactionTypes) }))
+                                             reactionTypes: self.reactionTypes, timelineVideoEnabled: self.timelineVideoEnabled) }))
                 self.next = response.next ?? .none
             } catch let responseError {
                 error = responseError

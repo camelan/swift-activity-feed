@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="22155" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21679"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22131"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -144,6 +144,38 @@
                             <action selector="profileImageTapped:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="tWn-zZ-YSK"/>
                         </connections>
                     </button>
+                    <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Xat-cJ-VRw">
+                        <rect key="frame" x="137.5" y="232" width="100" height="100"/>
+                        <subviews>
+                            <button opaque="NO" userInteractionEnabled="NO" contentMode="scaleAspectFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xke-Hk-q8y">
+                                <rect key="frame" x="0.0" y="0.0" width="100" height="100"/>
+                                <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.33000000000000002" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="100" id="8NY-zw-hV6"/>
+                                    <constraint firstAttribute="width" constant="100" id="Ibl-I5-tdB"/>
+                                    <constraint firstAttribute="width" secondItem="xke-Hk-q8y" secondAttribute="height" multiplier="1:1" id="daL-0r-pci"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="roundView" value="YES"/>
+                                </userDefinedRuntimeAttributes>
+                            </button>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="play" translatesAutoresizingMaskIntoConstraints="NO" id="1pF-Wz-B4s">
+                                <rect key="frame" x="30" y="30" width="40" height="40"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="40" id="Mvc-Tw-HcU"/>
+                                    <constraint firstAttribute="width" constant="40" id="jyP-WU-KW2"/>
+                                </constraints>
+                            </imageView>
+                        </subviews>
+                        <constraints>
+                            <constraint firstItem="1pF-Wz-B4s" firstAttribute="centerY" secondItem="xke-Hk-q8y" secondAttribute="centerY" id="4JH-HQ-dtg"/>
+                            <constraint firstItem="xke-Hk-q8y" firstAttribute="leading" secondItem="Xat-cJ-VRw" secondAttribute="leading" id="56t-SU-9QM"/>
+                            <constraint firstAttribute="trailing" secondItem="xke-Hk-q8y" secondAttribute="trailing" id="Khc-lv-P4c"/>
+                            <constraint firstItem="1pF-Wz-B4s" firstAttribute="centerX" secondItem="xke-Hk-q8y" secondAttribute="centerX" id="P5R-Kr-beA"/>
+                            <constraint firstItem="xke-Hk-q8y" firstAttribute="top" secondItem="Xat-cJ-VRw" secondAttribute="top" id="XJh-ya-kcc"/>
+                            <constraint firstAttribute="bottom" secondItem="xke-Hk-q8y" secondAttribute="bottom" id="yXU-eJ-E1F"/>
+                        </constraints>
+                    </view>
                 </subviews>
                 <constraints>
                     <constraint firstItem="TUl-zR-7tp" firstAttribute="leading" secondItem="S86-6T-t2E" secondAttribute="trailing" constant="8" id="0DS-xr-uFR"/>
@@ -164,10 +196,11 @@
                     <constraint firstItem="Pi4-xh-ICN" firstAttribute="top" secondItem="Mbn-bb-JtW" secondAttribute="bottom" constant="8" id="bLK-hB-FXk"/>
                     <constraint firstAttribute="trailing" secondItem="Pi4-xh-ICN" secondAttribute="trailing" id="fZb-jx-JHu"/>
                     <constraint firstItem="Pi4-xh-ICN" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="mt3-Mi-ITF"/>
+                    <constraint firstItem="Xat-cJ-VRw" firstAttribute="centerY" secondItem="jj7-32-SZg" secondAttribute="centerY" id="nPN-1e-jdX"/>
                     <constraint firstItem="Mbn-bb-JtW" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="16" id="oFk-cX-UZk"/>
                     <constraint firstAttribute="trailingMargin" secondItem="TUl-zR-7tp" secondAttribute="trailing" constant="8" id="pbp-HX-hS9"/>
                     <constraint firstItem="Kjh-KD-aLe" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="16" id="rs6-Ac-5MY"/>
-                    <constraint firstItem="dvb-4u-fgo" firstAttribute="centerY" secondItem="Kjh-KD-aLe" secondAttribute="centerY" id="tIR-jG-hfa"/>
+                    <constraint firstItem="Xat-cJ-VRw" firstAttribute="centerX" secondItem="jj7-32-SZg" secondAttribute="centerX" id="vAf-6C-J0P"/>
                     <constraint firstItem="Kjh-KD-aLe" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="16" id="va0-gA-Tnf"/>
                     <constraint firstAttribute="bottom" secondItem="Mbn-bb-JtW" secondAttribute="bottom" priority="250" constant="8" id="wnt-Ix-CDy"/>
                 </constraints>
@@ -181,6 +214,7 @@
                 <outlet property="messageLabel" destination="Mbn-bb-JtW" id="mNO-Yq-i9R"/>
                 <outlet property="nameLabel" destination="BlM-ye-otK" id="yFf-vh-Ofz"/>
                 <outlet property="photoImageView" destination="Pi4-xh-ICN" id="Wue-Hq-U2j"/>
+                <outlet property="playVideoView" destination="Xat-cJ-VRw" id="ovU-Xv-ZpI"/>
                 <outlet property="postSettingsButton" destination="TUl-zR-7tp" id="Xg3-EI-eti"/>
                 <outlet property="repostInfoLabel" destination="YjD-CN-ZL2" id="sel-SM-DWR"/>
                 <outlet property="repostInfoStackView" destination="NcK-Ag-RoS" id="Yn7-XS-SdY"/>
@@ -191,6 +225,7 @@
     </objects>
     <resources>
         <image name="options" width="20.5" height="4"/>
+        <image name="play" width="14" height="20"/>
         <image name="repost_icon" width="18" height="16"/>
         <image name="user_icon" width="24" height="24"/>
         <systemColor name="systemBackgroundColor">
