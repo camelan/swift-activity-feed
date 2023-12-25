@@ -8,7 +8,7 @@ public struct StreamFeedUIKitIOS {
     private static var subscriptionId: SubscriptionId?
     
     public static var notificationFeed: NotificationFeed?
-    private static var notificationFeedPresenter: NotificationsPresenter<Activity>?
+    private static var notificationFeedPresenter: NotificationsPresenter<EnrichedActivity<String, String, DefaultReaction>>?
     private static var notificationSubscriptionId: SubscriptionId?
 
     public static func makeTimeLineVC(entryPoint: GetStreamFeedEntryPoint = .timeline,
@@ -176,13 +176,14 @@ public struct StreamFeedUIKitIOS {
 
 // MARK: - Following Feed
 extension StreamFeedUIKitIOS {
-    public static func subscribeForFeedsUpdates(feedSlug: String, userId: String, onFeedsUpdate: @escaping (() -> Void)) {
+    public static func subscribeForFeedsUpdates(feedSlug: String, userId: String, onFeedsUpdate: @escaping ((Error?) -> Void)) {
         let feedID = FeedId(feedSlug: feedSlug, userId: userId)
         let flatFeed = FlatFeed(feedID)
         StreamFeedUIKitIOS.flatFeedPresenter = FlatFeedPresenter<Activity>(flatFeed: flatFeed, reactionTypes: [.comments, .likes])
 
         StreamFeedUIKitIOS.subscriptionId = StreamFeedUIKitIOS.flatFeedPresenter?.subscriptionPresenter.subscribe({ result in
-            onFeedsUpdate()
+            let error = result.error
+            onFeedsUpdate(error)
         })
 
     }
@@ -208,13 +209,14 @@ extension StreamFeedUIKitIOS {
 
 // MARK: - Notification Center
 extension StreamFeedUIKitIOS {
-    public static func subscribeForNotificationsUpdates(userId: String, onFeedsUpdate: @escaping (() -> Void)) {
+    public static func subscribeForNotificationsUpdates(userId: String, onFeedsUpdate: @escaping ((Error?) -> Void)) {
         let feedID = FeedId(feedSlug: "notification", userId: userId)
         let notificationFeed = NotificationFeed(feedID)
-        StreamFeedUIKitIOS.notificationFeedPresenter = NotificationsPresenter<Activity>(notificationFeed)
+        StreamFeedUIKitIOS.notificationFeedPresenter = NotificationsPresenter<EnrichedActivity<String, String, DefaultReaction>>(notificationFeed)
 
         StreamFeedUIKitIOS.notificationSubscriptionId = StreamFeedUIKitIOS.notificationFeedPresenter?.subscriptionPresenter.subscribe({ result in
-            onFeedsUpdate()
+            let error = result.error
+            onFeedsUpdate(error)
         })
     }
 
