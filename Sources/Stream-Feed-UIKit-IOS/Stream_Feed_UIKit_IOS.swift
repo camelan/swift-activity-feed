@@ -176,7 +176,10 @@ public struct StreamFeedUIKitIOS {
 
 // MARK: - Following Feed
 extension StreamFeedUIKitIOS {
-    public static func subscribeForFeedsUpdates(feedSlug: String, userId: String, onFeedsUpdate: @escaping ((Error?) -> Void)) {
+    public static func subscribeForFeedsUpdates(feedSlug: String,
+                                                userId: String,
+                                                logErrorAction: ((String, String) -> Void)?,
+                                                onFeedsUpdate: @escaping ((Error?) -> Void)) {
         let feedID = FeedId(feedSlug: feedSlug, userId: userId)
         let flatFeed = FlatFeed(feedID)
         StreamFeedUIKitIOS.flatFeedPresenter = FlatFeedPresenter<Activity>(flatFeed: flatFeed, reactionTypes: [.comments, .likes])
@@ -184,7 +187,7 @@ extension StreamFeedUIKitIOS {
         StreamFeedUIKitIOS.subscriptionId = StreamFeedUIKitIOS.flatFeedPresenter?.subscriptionPresenter.subscribe({ result in
             let error = result.error
             onFeedsUpdate(error)
-        })
+        }, logErrorAction: logErrorAction)
 
     }
 
@@ -209,7 +212,9 @@ extension StreamFeedUIKitIOS {
 
 // MARK: - Notification Center
 extension StreamFeedUIKitIOS {
-    public static func subscribeForNotificationsUpdates(userId: String, onFeedsUpdate: @escaping ((Error?) -> Void)) {
+    public static func subscribeForNotificationsUpdates(userId: String,
+                                                        logErrorAction: ((String, String) -> Void)?,
+                                                        onFeedsUpdate: @escaping ((Error?) -> Void)) {
         let feedID = FeedId(feedSlug: "notification", userId: userId)
         let notificationFeed = NotificationFeed(feedID)
         StreamFeedUIKitIOS.notificationFeedPresenter = NotificationsPresenter<EnrichedActivity<String, String, DefaultReaction>>(notificationFeed)
@@ -217,7 +222,7 @@ extension StreamFeedUIKitIOS {
         StreamFeedUIKitIOS.notificationSubscriptionId = StreamFeedUIKitIOS.notificationFeedPresenter?.subscriptionPresenter.subscribe({ result in
             let error = result.error
             onFeedsUpdate(error)
-        })
+        }, logErrorAction: logErrorAction)
     }
 
     public static func unsubscribeFromNotificationsUpdates() {

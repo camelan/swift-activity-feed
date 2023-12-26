@@ -32,20 +32,19 @@ extension SubscriptionPresenter {
     ///
     /// - Parameter subscription: a subscription block.
     /// - Returns: a subsction id. See `SubscriptionId`.
-    public func subscribe(_ subscription: @escaping Subscription<T>) -> SubscriptionId {
+    public func subscribe(_ subscription: @escaping Subscription<T>,
+                          logErrorAction: ((String, String) -> Void)? = nil) -> SubscriptionId {
         let subscriptionId = SubscriptionId() { [weak self] uuid in
             DispatchQueue.main.async {
                 self?.subscribers.removeValue(forKey: uuid)
             }
         }
-        
         subscribers[subscriptionId.uuid] = subscription
-        
         if subscribedChannel != nil {
             return subscriptionId
         }
-        
-        subscribedChannel = feed.subscribe(typeOf: T.self) { [weak self] result in
+        subscribedChannel = feed.subscribe(typeOf: T.self,
+                                           logErrorAction: logErrorAction) { [weak self] result in
             DispatchQueue.main.async {
                 self?.subscribers.forEach { _, subscription in
                     subscription(result)
