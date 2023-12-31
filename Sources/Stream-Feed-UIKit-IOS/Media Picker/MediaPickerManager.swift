@@ -230,9 +230,13 @@ extension MediaPicker {
     private func getThumbnailImage(forUrl url: URL) -> UIImage? {
         let asset: AVAsset = AVAsset(url: url)
         let imageGenerator = AVAssetImageGenerator(asset: asset)
+        let pickedVideoDurationInSeconds = getVideoDuration(forUrl: url)
+        let middleOfVideoInSeconds = pickedVideoDurationInSeconds / 2
         
         do {
-            let thumbnailImage = try imageGenerator.copyCGImage(at: CMTimeMake(value: 1, timescale: 60), actualTime: nil)
+            let thumbnailTime = CMTimeMake(value: Int64(middleOfVideoInSeconds), timescale: 1)
+            
+            let thumbnailImage = try imageGenerator.copyCGImage(at: thumbnailTime, actualTime: nil)
             return UIImage(cgImage: thumbnailImage)
         } catch let error {
             self.logErrorAction?("[Media Picker] something went wrong while getting thumbnail image",
