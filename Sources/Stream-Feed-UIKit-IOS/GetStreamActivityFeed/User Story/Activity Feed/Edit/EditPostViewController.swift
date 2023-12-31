@@ -550,7 +550,7 @@ extension EditPostViewController: UICollectionViewDataSource {
             return imageCell
         case .video:
             let videoCell = collectionView.dequeueReusableCell(for: indexPath) as VideoCell
-            videoCell.config(streamingURL: mediaItem.videoURL?.absoluteString)
+            videoCell.config(thumbnailImage: mediaItem.videoThumbnail)
             videoCell.removeButton.addTap { [weak self] _ in
                 guard let self else { return }
                 self.removeSelectedMediaItem(at: indexPath)
