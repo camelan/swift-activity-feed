@@ -15,7 +15,6 @@ enum EditTimelinePostEntryPoint {
     case editPost
     case newPost
 }
-
 public final class EditPostViewController: UIViewController, BundledStoryboardLoadable {
     public static var storyboardName = "ActivityFeed"
     private static let textViewPlaceholder = NSAttributedString(string: "Share something...")
@@ -26,6 +25,7 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
     var compressedVideosCount = 0
     var uploadedMediaCount = 0
     var mediaPickerManager: MediaPicker?
+    var onPostComplete: (() -> Void)?
     
     private var bag = Set<AnyCancellable>()
     let progressView = UIProgressView()
@@ -259,6 +259,7 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
                     if let error = error {
                         // self.showErrorAlert(error)
                     } else {
+                        self.onPostComplete?()
                         backBtnPressed(UIBarButtonItem())
                     }
                 }
