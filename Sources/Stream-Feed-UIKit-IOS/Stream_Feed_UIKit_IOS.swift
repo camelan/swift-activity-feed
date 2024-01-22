@@ -8,6 +8,7 @@ public struct StreamFeedUIKitIOS {
     private static var subscriptionId: SubscriptionId?
     
     public static var notificationFeed: NotificationFeed?
+    public static var getNotificationFeed: NotificationFeed?
     private static var notificationFeedPresenter: NotificationsPresenter<EnrichedActivity<String, String, DefaultReaction>>?
     private static var notificationSubscriptionId: SubscriptionId?
 
@@ -235,9 +236,9 @@ extension StreamFeedUIKitIOS {
                                          completion: @escaping (Result<([NotificationGroup<GetStream.EnrichedActivity<String, String, DefaultReaction>>], Int), Error>) -> Void) {
         let feedID = FeedId(feedSlug: "notification", userId: userId)
         let pagination: Pagination = lastId == nil ? .limit(pageSize) : (.limit(pageSize) + .lessThan(lastId ?? ""))
-        StreamFeedUIKitIOS.notificationFeed = NotificationFeed(feedID)
+        StreamFeedUIKitIOS.getNotificationFeed = NotificationFeed(feedID)
         
-        StreamFeedUIKitIOS.notificationFeed?.get(typeOf: GetStream.EnrichedActivity<String, String, DefaultReaction>.self,
+        StreamFeedUIKitIOS.getNotificationFeed?.get(typeOf: GetStream.EnrichedActivity<String, String, DefaultReaction>.self,
                                                  enrich: true,
                                                  pagination: pagination,
                                                  markOption: .none) { result in
