@@ -19,6 +19,7 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
     public static var storyboardName = "ActivityFeed"
     private static let textViewPlaceholder = NSAttributedString(string: "Share something...")
     let activityIndicator = UIActivityIndicatorView(style: .medium)
+    lazy var permissionsPresenter = PermissionsPresenter(delegate: self)
     var presenter: EditPostPresenter?
     var entryPoint: EditTimelinePostEntryPoint = .newPost
     var keyboardIsShown: Bool = false
@@ -26,6 +27,7 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
     var uploadedMediaCount = 0
     var mediaPickerManager: MediaPicker?
     var onPostComplete: (() -> Void)?
+    var alertRequiredPremissions: (() -> Void)?
     
     private var bag = Set<AnyCancellable>()
     let progressView = UIProgressView()
@@ -343,8 +345,31 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
     }
     
     private func presentCameraMediaPicker() {
+        guard checkPermissions() else {
+            if permissionsPresenter.givenPermissions.contains(.camera) == false {
+                permissionsPresenter.requestCameraAccess()
+            } else if permissionsPresenter.givenPermissions.contains(.microphone) == false {
+                permissionsPresenter.requestMicrophoneAccess()
+            }
+            return }
+        permissionsPresenter.givenPermissions.removeAll()
+        permissionsPresenter.deniedPermissions.removeAll()
+        openCamera()
+    }
+    
+    private func openCamera() {
         mediaPickerManager = makeMediaPicker()
         mediaPickerManager?.openCamera()
+    }
+    
+    private func checkPermissions() -> Bool {
+        permissionsPresenter.checkAllPermissions()
+        if permissionsPresenter.givenPermissions.contains(.camera),
+           permissionsPresenter.givenPermissions.contains(.microphone) {
+            return true
+        } else {
+            return false
+        }
     }
     
     private func makeMediaPicker() -> MediaPicker {
@@ -564,5 +589,27 @@ extension EditPostViewController: UICollectionViewDataSource {
 extension EditPostViewController: PHImagePickerDelegate {
     func didSelect(mediaItems: [MediaItem]) {
         handlePickedMedia(mediaItems: mediaItems)
+    }
+}
+
+
+extension EditPostViewController: PermissionsDelegate {
+    func didCheckCameraPermission(_ granted: Bool) {
+        if granted == true {
+            if permissionsPresenter.givenPermissions.contains(.microphone) == false && permissionsPresenter.deniedPermissions.contains(.microphone) == false {
+                permissionsPresenter.requestMicrophoneAccess()
+            }
+        }
+    }
+    
+    func didDenyPermissionBefore() {
+        alertRequiredPremissions?()
+    }
+    
+    func hasEnabledAllPermissions() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            self.openCamera()
+        }
     }
 }

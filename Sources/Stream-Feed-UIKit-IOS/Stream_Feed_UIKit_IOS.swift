@@ -51,6 +51,7 @@ public struct StreamFeedUIKitIOS {
                                       videoMaximumDurationInMinutes: Double,
                                       timeLineVideoEnabled: Bool,
                                       onPostComplete: @escaping (() -> Void),
+                                      alertRequiredPermissions: @escaping (() -> Void),
                                       logErrorAction: @escaping ((String, String) -> Void)) -> EditPostViewController {
         guard let userFeedId: FeedId = FeedId(feedSlug: "user") else { return EditPostViewController() }
         let editPostViewController = EditPostViewController.fromBundledStoryboard()
@@ -63,6 +64,7 @@ public struct StreamFeedUIKitIOS {
                                                              timeLineVideoEnabled: timeLineVideoEnabled,
                                                              logErrorAction: logErrorAction)
         editPostViewController.onPostComplete = onPostComplete
+        editPostViewController.alertRequiredPremissions = alertRequiredPermissions
         editPostViewController.modalPresentationStyle = .fullScreen
         return editPostViewController
     }
