@@ -31,7 +31,6 @@ enum CMPermission {
 
 final class PermissionsPresenter: NSObject {
     weak var delegate: PermissionsDelegate?
-    
     var givenPermissions: [CMPermission] = [] {
         didSet {
             dump(givenPermissions)
@@ -93,7 +92,8 @@ final class PermissionsPresenter: NSObject {
     }
     
     func requestMicrophoneAccess() {
-        if deniedPermissions.contains(.microphone) {
+        if deniedPermissions.contains(.microphone)  {
+            guard deniedPermissions.contains(.camera) == false else { return }
             delegate?.didDenyPermissionBefore()
             return
         }

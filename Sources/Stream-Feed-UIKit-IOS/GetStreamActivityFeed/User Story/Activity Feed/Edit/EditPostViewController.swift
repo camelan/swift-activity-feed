@@ -346,20 +346,22 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
     
     private func presentCameraMediaPicker() {
         guard checkPermissions() else {
-            if permissionsPresenter.givenPermissions.contains(.camera) == false {
+            if permissionsPresenter.givenPermissions.contains(.camera) == false && permissionsPresenter.givenPermissions.contains(.microphone) == false {
+                permissionsPresenter.requestCameraAccess()
+                permissionsPresenter.requestMicrophoneAccess()
+            } else if permissionsPresenter.givenPermissions.contains(.camera) == false {
                 permissionsPresenter.requestCameraAccess()
             } else if permissionsPresenter.givenPermissions.contains(.microphone) == false {
                 permissionsPresenter.requestMicrophoneAccess()
             }
             return }
-        permissionsPresenter.givenPermissions.removeAll()
-        permissionsPresenter.deniedPermissions.removeAll()
-        openCamera()
     }
     
     private func openCamera() {
         mediaPickerManager = makeMediaPicker()
         mediaPickerManager?.openCamera()
+        permissionsPresenter.givenPermissions.removeAll()
+        permissionsPresenter.deniedPermissions.removeAll()
     }
     
     private func checkPermissions() -> Bool {
@@ -594,16 +596,10 @@ extension EditPostViewController: PHImagePickerDelegate {
 
 
 extension EditPostViewController: PermissionsDelegate {
-    func didCheckCameraPermission(_ granted: Bool) {
-        if granted == true {
-            if permissionsPresenter.givenPermissions.contains(.microphone) == false && permissionsPresenter.deniedPermissions.contains(.microphone) == false {
-                permissionsPresenter.requestMicrophoneAccess()
-            }
-        }
-    }
-    
     func didDenyPermissionBefore() {
         alertRequiredPremissions?()
+        permissionsPresenter.givenPermissions.removeAll()
+        permissionsPresenter.deniedPermissions.removeAll()
     }
     
     func hasEnabledAllPermissions() {
