@@ -17,7 +17,7 @@ open class CommentTableViewCell: BaseTableViewCell {
     @IBOutlet public weak var likeButton: LikeButton!
     @IBOutlet weak var moreRepliesStackView: UIStackView!
     @IBOutlet weak var moreRepliesLabel: UILabel!
-    
+    var avatarUserTapped: (() -> Void)?
     public var withIndent: Bool {
         get { return avatarLeadingConstraint.constant != 0 }
         set {
@@ -51,6 +51,9 @@ open class CommentTableViewCell: BaseTableViewCell {
         likeButton.semanticContentAttribute = .forceLeftToRight
         withIndent = false
         moreReplies = ""
+    }
+    @IBAction func avatarTapped(_ sender: UIButton) {
+        avatarUserTapped?()
     }
     
     public func updateComment(name: String, comment: String, date: Date) {

@@ -587,7 +587,11 @@ open class DetailViewController<T: ActivityProtocol>: BaseFlatFeedViewController
                 self.textToolBar.textView.becomeFirstResponder()
             }
         }
-
+        cell.avatarUserTapped = { [weak self] in
+            guard let self = self else { return }
+            guard currentUserId != comment.user.id else { return }
+            self.navigateToUserProfileAction?(comment.user.id)
+        }
         // Like button.
         let countTitle = comment.childrenCounts[.like] ?? 0
         cell.likeButton.setTitle(countTitle == 0 ? "" : String(countTitle), for: .normal)

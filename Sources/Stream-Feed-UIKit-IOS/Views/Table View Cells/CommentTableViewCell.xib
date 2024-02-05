@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="21507" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="22155" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
-        <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21505"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22131"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -18,7 +17,7 @@
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <imageView opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="user_icon" translatesAutoresizingMaskIntoConstraints="NO" id="Qir-bI-evL">
-                        <rect key="frame" x="16" y="11" width="30" height="30"/>
+                        <rect key="frame" x="16" y="12" width="30" height="30"/>
                         <color key="tintColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstAttribute="width" constant="30" id="Yv8-lU-DQX"/>
@@ -30,11 +29,18 @@
                             </userDefinedRuntimeAttribute>
                         </userDefinedRuntimeAttributes>
                     </imageView>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zi5-OX-efF">
+                        <rect key="frame" x="8.5" y="4.5" width="45" height="45"/>
+                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                        <connections>
+                            <action selector="avatarTapped:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="W4K-iL-EW2"/>
+                        </connections>
+                    </button>
                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="hfV-iQ-bwJ">
-                        <rect key="frame" x="54" y="11" width="245" height="100"/>
+                        <rect key="frame" x="54" y="12" width="245" height="98"/>
                         <subviews>
                             <label userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gaC-2d-zYq">
-                                <rect key="frame" x="0.0" y="0.0" width="245" height="78"/>
+                                <rect key="frame" x="0.0" y="0.0" width="245" height="76"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <attributedString key="attributedText">
                                     <fragment content="TheBat LOL! I bet he thinks this is great. 2 mins">
@@ -48,7 +54,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <stackView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="251" alignment="center" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="1Qu-57-rmG">
-                                <rect key="frame" x="0.0" y="82" width="245" height="18"/>
+                                <rect key="frame" x="0.0" y="80" width="245" height="18"/>
                                 <subviews>
                                     <imageView opaque="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="reply_icon" translatesAutoresizingMaskIntoConstraints="NO" id="NgK-zH-tEv">
                                         <rect key="frame" x="0.0" y="0.0" width="25" height="18"/>
@@ -73,7 +79,7 @@
                         </subviews>
                     </stackView>
                     <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="YJe-Ln-RFC">
-                        <rect key="frame" x="299" y="11" width="60" height="30"/>
+                        <rect key="frame" x="299" y="12" width="60" height="30"/>
                         <subviews>
                             <button hidden="YES" opaque="NO" contentMode="scaleToFill" semanticContentAttribute="forceLeftToRight" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="pcu-27-34M">
                                 <rect key="frame" x="-30" y="0.0" width="30" height="30"/>
@@ -112,10 +118,14 @@
                 </subviews>
                 <constraints>
                     <constraint firstItem="YJe-Ln-RFC" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" id="2JL-nZ-9Ly"/>
+                    <constraint firstItem="zi5-OX-efF" firstAttribute="centerX" secondItem="Qir-bI-evL" secondAttribute="centerX" id="8Q7-F0-la7"/>
+                    <constraint firstItem="zi5-OX-efF" firstAttribute="height" secondItem="Qir-bI-evL" secondAttribute="height" multiplier="1.5" id="Bsn-9H-fCL"/>
                     <constraint firstAttribute="bottomMargin" secondItem="hfV-iQ-bwJ" secondAttribute="bottom" id="DFM-hw-2cD"/>
                     <constraint firstItem="hfV-iQ-bwJ" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" id="HOJ-f2-LKh"/>
                     <constraint firstAttribute="trailing" secondItem="YJe-Ln-RFC" secondAttribute="trailing" constant="16" id="MYI-fA-jbm"/>
+                    <constraint firstItem="zi5-OX-efF" firstAttribute="centerY" secondItem="Qir-bI-evL" secondAttribute="centerY" id="Opr-4V-bjT"/>
                     <constraint firstItem="hfV-iQ-bwJ" firstAttribute="leading" secondItem="Qir-bI-evL" secondAttribute="trailing" constant="8" id="TQG-dO-gz6"/>
+                    <constraint firstItem="zi5-OX-efF" firstAttribute="width" secondItem="Qir-bI-evL" secondAttribute="width" multiplier="1.5" id="V47-jU-pqw"/>
                     <constraint firstItem="Qir-bI-evL" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" id="VTR-rp-BL9"/>
                     <constraint firstItem="Qir-bI-evL" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" id="o6P-nd-Fiu"/>
                     <constraint firstItem="YJe-Ln-RFC" firstAttribute="leading" secondItem="hfV-iQ-bwJ" secondAttribute="trailing" id="stH-uO-6iq"/>
