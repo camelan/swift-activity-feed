@@ -71,6 +71,7 @@ open class CommentTableViewCell: BaseTableViewCell {
         }
         
         commentLabel.attributedText = attributedText
+        commentLabel.isUserInteractionEnabled = true
         commentLabel.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleTapOnUserName(_:))))
 
          
