@@ -6,6 +6,11 @@ public struct StreamFeedUIKitIOS {
     public static var flatFeed: FlatFeed?
     private static var flatFeedPresenter: FlatFeedPresenter<Activity>?
     private static var subscriptionId: SubscriptionId?
+    
+    public static var notificationFeed: NotificationFeed?
+    public static var getNotificationFeed: NotificationFeed?
+    private static var notificationFeedPresenter: NotificationsPresenter<EnrichedActivity<String, String, DefaultReaction>>?
+    private static var notificationSubscriptionId: SubscriptionId?
 
     public static func makeTimeLineVC(entryPoint: GetStreamFeedEntryPoint = .timeline,
                                       feedSlug: String,
@@ -97,35 +102,6 @@ public struct StreamFeedUIKitIOS {
         return activityDetailTableViewController
     }
 
-    public static func subscribeForFollowingFeedsUpdates(userId: String, onFollowingFeedsUpdate: @escaping (() -> Void)) {
-        let feedID = FeedId(feedSlug: "following", userId: userId)
-        let flatFeed = FlatFeed(feedID)
-        StreamFeedUIKitIOS.flatFeedPresenter = FlatFeedPresenter<Activity>(flatFeed: flatFeed, reactionTypes: [.comments, .likes])
-
-        StreamFeedUIKitIOS.subscriptionId = StreamFeedUIKitIOS.flatFeedPresenter?.subscriptionPresenter.subscribe({ result in
-            onFollowingFeedsUpdate()
-        })
-
-    }
-
-    public static func unsubscribeFromFeedUpdates() {
-        StreamFeedUIKitIOS.subscriptionId = nil
-    }
-
-    public static func loadFollowingFeeds(userId: String, pageSize: Int, completion: @escaping (Result<[Activity], Error>) -> Void) {
-        let feedID = FeedId(feedSlug: "following", userId: userId)
-        StreamFeedUIKitIOS.flatFeed = FlatFeed(feedID)
-        StreamFeedUIKitIOS.flatFeed?.get(typeOf: Activity.self, pagination: .limit(pageSize), includeReactions: [.counts, .own, .latest], completion: { result in
-            do {
-                let response = try result.get()
-                let activites = response.results
-                completion(.success(activites))
-            } catch let responseError {
-                completion(.failure(responseError))
-            }
-        })
-    }
-
     public static func setupStream(apiKey: String, appId: String, region: BaseURL.Location, logsEnabled: Bool = true) {
         if Client.shared.token.isEmpty {
             Client.shared = Client(apiKey: apiKey,
@@ -197,4 +173,125 @@ public struct StreamFeedUIKitIOS {
         }
     }
 
+}
+
+// MARK: - Following Feed
+extension StreamFeedUIKitIOS {
+    public static func subscribeForFeedsUpdates(feedSlug: String,
+                                                userId: String,
+                                                logErrorAction: ((String, String) -> Void)?,
+                                                onFeedsUpdate: @escaping ((Error?) -> Void)) {
+        let feedID = FeedId(feedSlug: feedSlug, userId: userId)
+        let flatFeed = FlatFeed(feedID)
+        StreamFeedUIKitIOS.flatFeedPresenter = FlatFeedPresenter<Activity>(flatFeed: flatFeed, reactionTypes: [.comments, .likes])
+
+        StreamFeedUIKitIOS.subscriptionId = StreamFeedUIKitIOS.flatFeedPresenter?.subscriptionPresenter.subscribe({ result in
+            let error = result.error
+            onFeedsUpdate(error)
+        }, logErrorAction: logErrorAction)
+
+    }
+
+    public static func unsubscribeFromFeedUpdates() {
+        StreamFeedUIKitIOS.subscriptionId = nil
+    }
+    
+    public static func loadFollowingFeeds(feedSlug: String, userId: String, pageSize: Int, completion: @escaping (Result<[Activity], Error>) -> Void) {
+        let feedID = FeedId(feedSlug: feedSlug, userId: userId)
+        StreamFeedUIKitIOS.flatFeed = FlatFeed(feedID)
+        StreamFeedUIKitIOS.flatFeed?.get(typeOf: Activity.self, pagination: .limit(pageSize), includeReactions: [.counts, .own, .latest], completion: { result in
+            do {
+                let response = try result.get()
+                let activites = response.results
+                completion(.success(activites))
+            } catch let responseError {
+                completion(.failure(responseError))
+            }
+        })
+    }
+}
+
+// MARK: - Notification Center
+extension StreamFeedUIKitIOS {
+    public static func subscribeForNotificationsUpdates(userId: String,
+                                                        logErrorAction: ((String, String) -> Void)?,
+                                                        onFeedsUpdate: @escaping ((Error?) -> Void)) {
+        let feedID = FeedId(feedSlug: "notification", userId: userId)
+        let notificationFeed = NotificationFeed(feedID)
+        StreamFeedUIKitIOS.notificationFeedPresenter = NotificationsPresenter<EnrichedActivity<String, String, DefaultReaction>>(notificationFeed)
+
+        StreamFeedUIKitIOS.notificationSubscriptionId = StreamFeedUIKitIOS.notificationFeedPresenter?.subscriptionPresenter.subscribe({ result in
+            let error = result.error
+            onFeedsUpdate(error)
+        }, logErrorAction: logErrorAction)
+    }
+
+    public static func unsubscribeFromNotificationsUpdates() {
+        StreamFeedUIKitIOS.notificationSubscriptionId = nil
+    }
+    
+    public static func loadNotifications(userId: String,
+                                         lastId: String?,
+                                         pageSize: Int,
+                                         completion: @escaping (Result<([NotificationGroup<GetStream.EnrichedActivity<String, String, DefaultReaction>>], Int), Error>) -> Void) {
+        let feedID = FeedId(feedSlug: "notification", userId: userId)
+        let pagination: Pagination = lastId == nil ? .limit(pageSize) : (.limit(pageSize) + .lessThan(lastId ?? ""))
+        StreamFeedUIKitIOS.getNotificationFeed = NotificationFeed(feedID)
+        
+        StreamFeedUIKitIOS.getNotificationFeed?.get(typeOf: GetStream.EnrichedActivity<String, String, DefaultReaction>.self,
+                                                 enrich: true,
+                                                 pagination: pagination,
+                                                 markOption: .none) { result in
+            do {
+                let response = try result.get()
+                let unSeenCount = response.unseenCount ?? 0
+                let activites = response.results
+                
+                completion(.success((activites, unSeenCount)))
+            } catch let responseError {
+                completion(.failure(responseError))
+            }
+        }
+    }
+    
+    public static func markAsRead(userId: String,
+                                  notificationId: String, completion: @escaping (Error?) -> Void) {
+        let feedID = FeedId(feedSlug: "notification", userId: userId)
+        StreamFeedUIKitIOS.notificationFeed = NotificationFeed(feedID)
+        StreamFeedUIKitIOS.notificationFeed?.get(typeOf: GetStream.EnrichedActivity<String, String, DefaultReaction>.self,
+                                                 enrich: false,
+                                                 markOption: .read([notificationId])) { result in
+            completion(result.error)
+        }
+    }
+    
+    public static func markAllAsSeen(userId: String,
+                                     completion: @escaping (Error?) -> Void) {
+        let feedID = FeedId(feedSlug: "notification", userId: userId)
+        StreamFeedUIKitIOS.notificationFeed = NotificationFeed(feedID)
+        StreamFeedUIKitIOS.notificationFeed?.get(typeOf: GetStream.EnrichedActivity<String, String, DefaultReaction>.self,
+                                                 enrich: false,
+                                                 markOption: .seenAll) { result in
+            completion(result.error)
+        }
+    }
+    
+    
+    public static func getUnseenCount(userId: String, completion: @escaping (Result<Int, Error>) -> Void) {
+        let feedID = FeedId(feedSlug: "notification", userId: userId)
+        StreamFeedUIKitIOS.notificationFeed = NotificationFeed(feedID)
+        StreamFeedUIKitIOS.notificationFeed?.get(typeOf: GetStream.EnrichedActivity<String, String, DefaultReaction>.self,
+                                                 enrich: false,
+                                                 markOption: .none) { result in
+            do {
+                let response = try result.get()
+                let unSeenCount = response.unseenCount ?? 0
+                
+                completion(.success(unSeenCount))
+            } catch let responseError {
+                completion(.failure(responseError))
+            }
+        }
+    }
+    
 }
