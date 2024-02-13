@@ -229,9 +229,11 @@ extension MediaPicker: UIImagePickerControllerDelegate, UINavigationControllerDe
 extension MediaPicker {
     private func getThumbnailImage(forUrl url: URL) -> UIImage? {
         let asset: AVAsset = AVAsset(url: url)
-        let imageGenerator = AVAssetImageGenerator(asset: asset)
         let pickedVideoDurationInSeconds = getVideoDuration(forUrl: url)
         let middleOfVideoInSeconds = pickedVideoDurationInSeconds / 2
+        let imageGenerator = AVAssetImageGenerator(asset: asset)
+        // Enable preferred track transform to ensure correct orientation of the generated thumbnail image
+        imageGenerator.appliesPreferredTrackTransform = true
         
         do {
             let thumbnailTime = CMTimeMake(value: Int64(middleOfVideoInSeconds), timescale: 1)
