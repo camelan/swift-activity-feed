@@ -6,7 +6,7 @@ public struct StreamFeedUIKitIOS {
     public static var flatFeed: FlatFeed?
     private static var flatFeedPresenter: FlatFeedPresenter<Activity>?
     private static var subscriptionId: SubscriptionId?
-    
+
     public static var notificationFeed: NotificationFeed?
     public static var getNotificationFeed: NotificationFeed?
     private static var notificationFeedPresenter: NotificationsPresenter<EnrichedActivity<String, String, DefaultReaction>>?
