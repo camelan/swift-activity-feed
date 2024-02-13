@@ -57,6 +57,8 @@ open class PostHeaderTableViewCell: BaseTableViewCell {
         repostInfoStackView.isHidden = true
         messageLabel.text = nil
         photoImageView.image = nil
+        photoImageView.contentMode = .scaleAspectFill
+        photoImageView.backgroundColor = .white
         currentActivity = nil
         messageBottomConstraint.priority = .defaultHigh + 1
         playVideoView.isHidden = false
@@ -96,19 +98,41 @@ open class PostHeaderTableViewCell: BaseTableViewCell {
         }
     }
 
-    public func updatePhoto(with url: URL) {
+    public func updatePhoto(with url: URL, originalActivity: Activity) {
         messageBottomConstraint.priority = .defaultLow
         photoImageView.isHidden = false
-        loadImage(with: url)
+        loadImage(with: url, originalActivity: originalActivity)
     }
     
-    private func loadImage(with url: URL) {
+    private func loadImage(with url: URL, originalActivity: Activity) {
         let imageId = url.getImageID()
         let resource = KF.ImageResource(downloadURL: url, cacheKey: imageId)
+        if let firstMediaItem = originalActivity.media?.first {
+            let mediaType = firstMediaItem.getMediaType()
+            
+            photoImageView.contentMode = mediaType == .video ? .scaleAspectFit : .scaleAspectFill
+            photoImageView.backgroundColor = mediaType == .video ? .black : .white
+        }
         
-        photoImageView.loadImage(from: resource)
+        photoImageView.loadImage(from: resource) { [weak self] result in
+            guard let self else { return }
+            guard let retrivedImage = try? result.get().image else { return }
+            setPhotoContentMode(with: retrivedImage, originalActivity: originalActivity)
+        }
     }
-
+    
+    private func setPhotoContentMode(with image: UIImage, originalActivity: Activity) {
+        let isPortrait = isPortrait(image: image)
+        
+        guard let firstMediaItem = originalActivity.media?.first else { return }
+        let mediaType = firstMediaItem.getMediaType()
+        photoImageView.contentMode = (mediaType == .video && isPortrait) ? .scaleAspectFit : .scaleAspectFill
+        photoImageView.backgroundColor = (mediaType == .video && isPortrait) ? .black : .white
+    }
+    
+    private func isPortrait(image: UIImage) -> Bool {
+        return image.size.height > image.size.width
+    }
     
     @IBAction func postSettings(_ sender: UIButton) {
        guard let currentActivity = currentActivity else { return }
@@ -141,6 +165,7 @@ extension PostHeaderTableViewCell {
     
     public func update<T: ActivityProtocol>(with activity: T, originalActivity: T? = nil) where T.ActorType: UserNameRepresentable {
         let originalActivity = originalActivity ?? activity
+        let activity = originalActivity as! Activity
         nameLabel.text = originalActivity.actor.name
         
         if let textRepresentable = originalActivity as? TextRepresentable {
@@ -153,16 +178,16 @@ extension PostHeaderTableViewCell {
                 messageLabel.text = text
             case .image(let url):
                 guard let currentActivity = currentActivity, currentActivity.media?.count ?? 0 > 0 else {
-                    updatePhoto(with: url)
+                    updatePhoto(with: url, originalActivity: activity)
                     return
                 }
                 guard let firstMediaItem = currentActivity.media?.first else { return }
                 guard let mediaURLString = firstMediaItem.getMediaURL() else {
-                    updatePhoto(with: url)
+                    updatePhoto(with: url, originalActivity: activity)
                     return
                 }
                 let mediaURL = URL(string: mediaURLString)!
-                updatePhoto(with: mediaURL)
+                updatePhoto(with: mediaURL, originalActivity: activity)
             case .following(let user):
                 messageLabel.text = "Follow to \(user.name)"
             default:
