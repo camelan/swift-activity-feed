@@ -171,8 +171,7 @@ extension MediaPicker: UIImagePickerControllerDelegate, UINavigationControllerDe
         if UIImagePickerController.isFlashAvailable(for: .front) {
             imagePickerViewController.cameraFlashMode = .on
         }
-        
-        presentationController?.present(imagePickerViewController, animated: true)
+        self.presentationController?.present(imagePickerViewController, animated: true)
     }
     
     
