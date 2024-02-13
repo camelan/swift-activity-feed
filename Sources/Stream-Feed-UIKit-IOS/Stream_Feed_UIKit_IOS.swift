@@ -229,6 +229,7 @@ extension StreamFeedUIKitIOS {
 
     public static func unsubscribeFromNotificationsUpdates() {
         StreamFeedUIKitIOS.notificationSubscriptionId = nil
+        StreamFeedUIKitIOS.notificationFeed = nil
     }
 
     public static func loadNotifications(userId: String,
