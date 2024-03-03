@@ -17,7 +17,8 @@ open class CommentTableViewCell: BaseTableViewCell {
     @IBOutlet public weak var likeButton: LikeButton!
     @IBOutlet weak var moreRepliesStackView: UIStackView!
     @IBOutlet weak var moreRepliesLabel: UILabel!
-    
+    var avatarUserTapped: (() -> Void)?
+    var name: String?
     public var withIndent: Bool {
         get { return avatarLeadingConstraint.constant != 0 }
         set {
@@ -52,8 +53,12 @@ open class CommentTableViewCell: BaseTableViewCell {
         withIndent = false
         moreReplies = ""
     }
+    @IBAction func avatarTapped(_ sender: UIButton) {
+        avatarUserTapped?()
+    }
     
     public func updateComment(name: String, comment: String, date: Date) {
+        self.name = name
         let attributedText = NSMutableAttributedString(string: name, attributes: [.font: UIFont(name: "GTWalsheimProMedium", size: 15.0)!])
         let comment = NSAttributedString(string: "\n\(comment)", attributes: [.font: UIFont(name: "GTWalsheimProRegular", size: 15.0)!])
         attributedText.append(comment)
@@ -66,5 +71,22 @@ open class CommentTableViewCell: BaseTableViewCell {
         }
         
         commentLabel.attributedText = attributedText
+        commentLabel.isUserInteractionEnabled = true
+        commentLabel.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleTapOnUserName(_:))))
+
+         
+    }
+    
+    @objc func handleTapOnUserName(_ tapGesture: UITapGestureRecognizer) {
+        if let name = name {
+            if didTapText(label: commentLabel, text: name, tapGesture: tapGesture) {
+                avatarUserTapped?()
+            }
+        }
+    }
+    
+    private func didTapText(label: UILabel, text: String, tapGesture: UITapGestureRecognizer) -> Bool {
+        guard let textRange = (label.text as? NSString)?.range(of: text) else { return false }
+        return tapGesture.didTapAttributedTextInLabel(label: label, inRange: textRange)
     }
 }
