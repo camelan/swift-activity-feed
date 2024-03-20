@@ -182,14 +182,13 @@ extension StreamFeedUIKitIOS {
     public static func subscribeForFeedsUpdates(feedSlug: String,
                                                 userId: String,
                                                 logErrorAction: ((String, String) -> Void)?,
-                                                onFeedsUpdate: @escaping ((Error?) -> Void)) {
+                                                onFeedsUpdate: @escaping ((Result<SubscriptionResponse<Activity>, SubscriptionError>) -> Void)) {
         let feedID = FeedId(feedSlug: feedSlug, userId: userId)
         let flatFeed = FlatFeed(feedID)
         StreamFeedUIKitIOS.flatFeedPresenter = FlatFeedPresenter<Activity>(flatFeed: flatFeed, reactionTypes: [.comments, .likes])
 
         StreamFeedUIKitIOS.subscriptionId = StreamFeedUIKitIOS.flatFeedPresenter?.subscriptionPresenter.subscribe({ result in
-            let error = result.error
-            onFeedsUpdate(error)
+            onFeedsUpdate(result)
         }, logErrorAction: logErrorAction)
 
     }
