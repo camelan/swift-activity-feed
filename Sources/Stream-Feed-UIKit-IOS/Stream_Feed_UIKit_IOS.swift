@@ -99,21 +99,6 @@ public struct StreamFeedUIKitIOS {
         return activityDetailTableViewController
     }
 
-    public static func subscribeForFollowingFeedsUpdates(userId: String, onFollowingFeedsUpdate: @escaping (() -> Void)) {
-        let feedID = FeedId(feedSlug: "following", userId: userId)
-        let flatFeed = FlatFeed(feedID)
-        StreamFeedUIKitIOS.flatFeedPresenter = FlatFeedPresenter<Activity>(flatFeed: flatFeed, reactionTypes: [.comments, .likes])
-
-        StreamFeedUIKitIOS.subscriptionId = StreamFeedUIKitIOS.flatFeedPresenter?.subscriptionPresenter.subscribe({ result in
-            onFollowingFeedsUpdate()
-        })
-
-    }
-
-    public static func unsubscribeFromFeedUpdates() {
-        StreamFeedUIKitIOS.subscriptionId = nil
-    }
-
     public static func loadFollowingFeeds(userId: String, pageSize: Int, completion: @escaping (Result<[Activity], Error>) -> Void) {
         let feedID = FeedId(feedSlug: "following", userId: userId)
         StreamFeedUIKitIOS.flatFeed = FlatFeed(feedID)
@@ -199,4 +184,25 @@ public struct StreamFeedUIKitIOS {
         }
     }
 
+}
+
+// MARK: - Following Feed
+extension StreamFeedUIKitIOS {
+    public static func subscribeForFeedsUpdates(feedSlug: String,
+                                                userId: String,
+                                                logErrorAction: ((String, String) -> Void)?,
+                                                onFeedsUpdate: @escaping ((Result<SubscriptionResponse<Activity>, SubscriptionError>) -> Void)) {
+        let feedID = FeedId(feedSlug: feedSlug, userId: userId)
+        let flatFeed = FlatFeed(feedID)
+        StreamFeedUIKitIOS.flatFeedPresenter = FlatFeedPresenter<Activity>(flatFeed: flatFeed, reactionTypes: [.comments, .likes])
+
+        StreamFeedUIKitIOS.subscriptionId = StreamFeedUIKitIOS.flatFeedPresenter?.subscriptionPresenter.subscribe({ result in
+            onFeedsUpdate(result)
+        }, logErrorAction: logErrorAction)
+
+    }
+
+    public static func unsubscribeFromFeedUpdates() {
+        StreamFeedUIKitIOS.subscriptionId = nil
+    }
 }
