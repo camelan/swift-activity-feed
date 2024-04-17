@@ -140,8 +140,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/camelan/stream-swift",
       "state" : {
-        "branch" : "feature/CM-5946/notification-center",
-        "revision" : "80522ea2e23c4843902f4691ffcb9005f5002870"
+        "branch" : "release-2-8-30-17-4-2024",
+        "revision" : "08049207c407f12d191d8220b2aec97045fd4de5"
       }
     },
     {
