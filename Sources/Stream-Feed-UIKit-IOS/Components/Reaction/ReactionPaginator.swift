@@ -47,26 +47,26 @@ extension ReactionPaginator {
                                 userTypeOf: U.self,
                                 pagination: pagination,
                                 withActivityData: false) { [weak self] result in
-                                    guard let self = self else {
-                                        return
-                                    }
-                                    
-                                    if case .none = pagination {
-                                        self.items = []
-                                        self.next = .none
-                                    }
-                                    
-                                    var error: Error?
-                                    
-                                    do {
-                                        let response = try result.get()
-                                        self.items.append(contentsOf: response.reactions.reversed())
-                                        self.next = response.next ?? .none
-                                    } catch let responseError {
-                                        error = responseError
-                                    }
-                                    
-                                    DispatchQueue.main.async { completion(error) }
+            guard let self = self else {
+                return
+            }
+            
+            if case .none = pagination {
+                self.items = []
+                self.next = .none
+            }
+            
+            var error: Error?
+            
+            do {
+                let response = try result.get()
+                self.items.append(contentsOf: response.reactions.reversed())
+                self.next = response.next ?? .none
+            } catch let responseError {
+                error = responseError
+            }
+            
+            DispatchQueue.main.async { completion(error) }
         }
     }
 }
