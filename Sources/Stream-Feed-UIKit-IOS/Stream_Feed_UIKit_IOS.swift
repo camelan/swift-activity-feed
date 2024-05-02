@@ -9,7 +9,7 @@ public struct StreamFeedUIKitIOS {
 
     public static var notificationFeed: NotificationFeed?
     public static var getNotificationFeed: NotificationFeed?
-    private static var notificationFeedPresenter: NotificationsPresenter<EnrichedActivity<String, String, DefaultReaction>>?
+    private static var notificationFeedPresenter: NotificationsPresenter<EnrichedActivity<User, String, DefaultReaction>>?
     private static var notificationSubscriptionId: SubscriptionId?
 
     public static func makeTimeLineVC(entryPoint: GetStreamFeedEntryPoint = .timeline,
@@ -219,7 +219,7 @@ extension StreamFeedUIKitIOS {
                                                         onFeedsUpdate: @escaping ((Error?) -> Void)) {
         let feedID = FeedId(feedSlug: "notification", userId: userId)
         let notificationFeed = NotificationFeed(feedID)
-        StreamFeedUIKitIOS.notificationFeedPresenter = NotificationsPresenter<EnrichedActivity<String, String, DefaultReaction>>(notificationFeed)
+        StreamFeedUIKitIOS.notificationFeedPresenter = NotificationsPresenter<EnrichedActivity<User, String, DefaultReaction>>(notificationFeed)
 
         StreamFeedUIKitIOS.notificationSubscriptionId = StreamFeedUIKitIOS.notificationFeedPresenter?.subscriptionPresenter.subscribe({ result in
             let error = result.error
@@ -235,12 +235,12 @@ extension StreamFeedUIKitIOS {
     public static func loadNotifications(userId: String,
                                          lastId: String?,
                                          pageSize: Int,
-                                         completion: @escaping (Result<([NotificationGroup<GetStream.EnrichedActivity<String, String, DefaultReaction>>], Int), Error>) -> Void) {
+                                         completion: @escaping (Result<([NotificationGroup<GetStream.EnrichedActivity<User, String, DefaultReaction>>], Int), Error>) -> Void) {
         let feedID = FeedId(feedSlug: "notification", userId: userId)
         let pagination: Pagination = lastId == nil ? .limit(pageSize) : (.limit(pageSize) + .lessThan(lastId ?? ""))
         StreamFeedUIKitIOS.getNotificationFeed = NotificationFeed(feedID)
 
-        StreamFeedUIKitIOS.getNotificationFeed?.get(typeOf: GetStream.EnrichedActivity<String, String, DefaultReaction>.self,
+        StreamFeedUIKitIOS.getNotificationFeed?.get(typeOf: GetStream.EnrichedActivity<User, String, DefaultReaction>.self,
                                                  enrich: true,
                                                  pagination: pagination,
                                                  markOption: .none) { result in
