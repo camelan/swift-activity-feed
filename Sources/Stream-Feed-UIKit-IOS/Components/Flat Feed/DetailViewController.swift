@@ -9,6 +9,7 @@
 import UIKit
 import SnapKit
 import GetStream
+import IQKeyboardManagerSwift
 
 /// Detail View Controller section types.
 public struct DetailViewControllerSectionTypes: OptionSet, Equatable {
@@ -155,6 +156,19 @@ open class DetailViewController<T: ActivityProtocol>: BaseFlatFeedViewController
         view.endEditing(true)
     }
 
+    open override func viewWillAppear(_ animated: Bool) {
+        Task(priority: .userInitiated) { @MainActor in
+            IQKeyboardManager.shared.enable = false
+        }
+    }
+    
+    open override func viewWillDisappear(_ animated: Bool) {
+        Task(priority: .userInitiated) { @MainActor in
+            IQKeyboardManager.shared.enable = true
+        }
+    }
+    
+    
     deinit {
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
