@@ -81,7 +81,7 @@ open class FlatFeedViewController<T: ActivityProtocol>: BaseFlatFeedViewControll
 //        bannerView.hide()
         tabBarItem.badgeValue = nil
         if let error = error {
-            logErrorAction?("something went wrong when load feed data", "\(error.localizedDescription ?? "")")
+            logErrorAction?("something went wrong when load feed data", "\(error.localizedDescription)")
         }
         super.dataLoaded(error)
     }

@@ -9,6 +9,16 @@ public struct StreamFeedUIKitIOS {
 
     public static var notificationFeed: NotificationFeed?
     public static var getNotificationFeed: NotificationFeed?
+    private static var notificationFeedPresenter: NotificationsPresenter<EnrichedActivity<String, String, DefaultReaction>>?
+    private static var notificationSubscriptionId: SubscriptionId?
+
+    public static var notificationFeed: NotificationFeed?
+    public static var getNotificationFeed: NotificationFeed?
+    private static var notificationFeedPresenter: NotificationsPresenter<EnrichedActivity<String, String, DefaultReaction>>?
+    private static var notificationSubscriptionId: SubscriptionId?
+
+    public static var notificationFeed: NotificationFeed?
+    public static var getNotificationFeed: NotificationFeed?
     private static var notificationFeedPresenter: NotificationsPresenter<EnrichedActivity<User, String, DefaultReaction>>?
     private static var notificationSubscriptionId: SubscriptionId?
 
