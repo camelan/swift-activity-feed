@@ -64,12 +64,16 @@ open class BaseFlatFeedViewController<T: ActivityProtocol>: UIViewController, UI
     /// A default callback when the data of a flat feed is loaded.
     /// Override this method for a custom handling.
     open func dataLoaded(_ error: Error?) {
-        refreshControl.endRefreshing()
+        DispatchQueue.main.async { [weak self] in
+            self?.refreshControl.endRefreshing()
+        }
         
         if let error = error {
             print("❌", error)
         } else {
-            tableView.reloadData()
+            DispatchQueue.main.async { [weak self] in
+                self?.tableView.reloadData()
+            }
         }
     }
     

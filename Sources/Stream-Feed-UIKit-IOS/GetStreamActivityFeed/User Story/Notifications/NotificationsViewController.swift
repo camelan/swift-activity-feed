@@ -91,8 +91,11 @@ final class NotificationsViewController: UITableViewController, BundledStoryboar
                 }
                 
                 if self.isViewLoaded {
-                    self.tableView.refreshControl?.endRefreshing()
-                    self.tableView.reloadData()
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self else { return }
+                        self.tableView.refreshControl?.endRefreshing()
+                        self.tableView.reloadData()
+                    }
                 }
             }
         }

@@ -623,16 +623,22 @@ open class DetailViewController<T: ActivityProtocol>: BaseFlatFeedViewController
     }
 
     private func commentsLoaded(isNewCommentSent: Bool = false, _ error: Error?) {
-        refreshControl.endRefreshing()
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            self.refreshControl.endRefreshing()
+        }
 
         if let error = error {
             logErrorAction?("someThing went wrong when load comments",
                             "id: \(activityPresenter?.originalActivity.id ?? "") \n Error: \(error.localizedDescription)")
         } else {
             updateSectionsIndex()
-            tableView.reloadData()
-            if isNewCommentSent {
-                tableView.scrollToBottom(animated: true)
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                self.tableView.reloadData()
+                if isNewCommentSent {
+                    self.tableView.scrollToBottom(animated: true)
+                }
             }
         }
     }

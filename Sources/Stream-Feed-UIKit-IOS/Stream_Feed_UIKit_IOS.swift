@@ -9,6 +9,16 @@ public struct StreamFeedUIKitIOS {
     
     public static var notificationFeed: NotificationFeed?
     public static var getNotificationFeed: NotificationFeed?
+    private static var notificationFeedPresenter: NotificationsPresenter<EnrichedActivity<String, String, DefaultReaction>>?
+    private static var notificationSubscriptionId: SubscriptionId?
+
+    public static var notificationFeed: NotificationFeed?
+    public static var getNotificationFeed: NotificationFeed?
+    private static var notificationFeedPresenter: NotificationsPresenter<EnrichedActivity<String, String, DefaultReaction>>?
+    private static var notificationSubscriptionId: SubscriptionId?
+
+    public static var notificationFeed: NotificationFeed?
+    public static var getNotificationFeed: NotificationFeed?
     private static var notificationFeedPresenter: NotificationsPresenter<EnrichedActivity<User, String, DefaultReaction>>?
     private static var notificationSubscriptionId: SubscriptionId?
 
@@ -196,7 +206,7 @@ extension StreamFeedUIKitIOS {
     public static func unsubscribeFromFeedUpdates() {
         StreamFeedUIKitIOS.subscriptionId = nil
     }
-    
+
     public static func loadFollowingFeeds(feedSlug: String, userId: String, pageSize: Int, completion: @escaping (Result<[Activity], Error>) -> Void) {
         let feedID = FeedId(feedSlug: feedSlug, userId: userId)
         StreamFeedUIKitIOS.flatFeed = FlatFeed(feedID)
@@ -231,7 +241,7 @@ extension StreamFeedUIKitIOS {
         StreamFeedUIKitIOS.notificationSubscriptionId = nil
         StreamFeedUIKitIOS.notificationFeed = nil
     }
-    
+
     public static func loadNotifications(userId: String,
                                          lastId: String?,
                                          pageSize: Int,
@@ -239,7 +249,7 @@ extension StreamFeedUIKitIOS {
         let feedID = FeedId(feedSlug: "notification", userId: userId)
         let pagination: Pagination = lastId == nil ? .limit(pageSize) : (.limit(pageSize) + .lessThan(lastId ?? ""))
         StreamFeedUIKitIOS.getNotificationFeed = NotificationFeed(feedID)
-        
+
         StreamFeedUIKitIOS.getNotificationFeed?.get(typeOf: GetStream.EnrichedActivity<User, String, DefaultReaction>.self,
                                                  enrich: true,
                                                  pagination: pagination,
@@ -248,14 +258,14 @@ extension StreamFeedUIKitIOS {
                 let response = try result.get()
                 let unSeenCount = response.unseenCount ?? 0
                 let activites = response.results
-                
+
                 completion(.success((activites, unSeenCount)))
             } catch let responseError {
                 completion(.failure(responseError))
             }
         }
     }
-    
+
     public static func markAsRead(userId: String,
                                   notificationId: String, completion: @escaping (Error?) -> Void) {
         let feedID = FeedId(feedSlug: "notification", userId: userId)
@@ -266,7 +276,7 @@ extension StreamFeedUIKitIOS {
             completion(result.error)
         }
     }
-    
+
     public static func markAllAsSeen(userId: String,
                                      completion: @escaping (Error?) -> Void) {
         let feedID = FeedId(feedSlug: "notification", userId: userId)
@@ -277,8 +287,8 @@ extension StreamFeedUIKitIOS {
             completion(result.error)
         }
     }
-    
-    
+
+
     public static func getUnseenCount(userId: String, completion: @escaping (Result<Int, Error>) -> Void) {
         let feedID = FeedId(feedSlug: "notification", userId: userId)
         StreamFeedUIKitIOS.notificationFeed = NotificationFeed(feedID)
@@ -288,12 +298,12 @@ extension StreamFeedUIKitIOS {
             do {
                 let response = try result.get()
                 let unSeenCount = response.unseenCount ?? 0
-                
+
                 completion(.success(unSeenCount))
             } catch let responseError {
                 completion(.failure(responseError))
             }
         }
     }
-    
+
 }
