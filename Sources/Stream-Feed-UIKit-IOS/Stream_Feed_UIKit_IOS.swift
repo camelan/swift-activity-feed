@@ -215,14 +215,19 @@ extension StreamFeedUIKitIOS {
 extension StreamFeedUIKitIOS {
     public static func subscribeForNotificationsUpdates(userId: String,
                                                         logErrorAction: ((String, String) -> Void)?,
-                                                        onFeedsUpdate: @escaping ((Error?) -> Void)) {
+                                                        onFeedsUpdate: @escaping (Result<[EnrichedActivity<User, String, DefaultReaction>], Error>) -> Void) {
         let feedID = FeedId(feedSlug: "notification", userId: userId)
         let notificationFeed = NotificationFeed(feedID)
         StreamFeedUIKitIOS.notificationFeedPresenter = NotificationsPresenter<EnrichedActivity<User, String, DefaultReaction>>(notificationFeed)
-
+        
         StreamFeedUIKitIOS.notificationSubscriptionId = StreamFeedUIKitIOS.notificationFeedPresenter?.subscriptionPresenter.subscribe({ result in
-            let error = result.error
-            onFeedsUpdate(error)
+            do {
+                let response = try result.get()
+                let newActivites = response.newActivities
+                onFeedsUpdate(.success(newActivites) )
+            } catch let responseError {
+                onFeedsUpdate(.failure(responseError))
+            }
         }, logErrorAction: logErrorAction)
     }
 
