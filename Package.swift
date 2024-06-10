@@ -15,10 +15,10 @@ let package = Package(
             targets: ["GetStreamActivityFeed"])
     ],
     dependencies: [
-        .package(url: "https://github.com/camelan/stream-swift", .exactItem("1.0.17")),
-        .package(url: "https://github.com/kean/Nuke", .upToNextMajor(from: "12.1.0")),
-        .package(url: "https://github.com/AliSoftware/Reusable.git", .upToNextMajor(from: "4.1.2")),
-        .package(url: "https://github.com/SnapKit/SnapKit", .upToNextMajor(from: "5.6.0")),
+        .package(url: "https://github.com/camelan/stream-swift", branch: "release-2-8-34-10-6-2024"),
+        .package(url: "https://github.com/kean/Nuke", .exactItem("12.6.0")),
+        .package(url: "https://github.com/AliSoftware/Reusable.git", .exactItem("4.1.2")),
+        .package(url: "https://github.com/SnapKit/SnapKit", .exactItem("5.7.1")),
         .package(url: "https://github.com/onevcat/Kingfisher.git", .exactItem("7.11.0"))
     ],
     targets: [
