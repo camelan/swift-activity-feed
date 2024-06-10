@@ -15,7 +15,7 @@ let package = Package(
             targets: ["GetStreamActivityFeed"])
     ],
     dependencies: [
-        .package(url: "https://github.com/camelan/stream-swift", branch: "feature/CM-6665/Reduce-getStream-API-calls"),
+        .package(url: "https://github.com/camelan/stream-swift", branch: "develop"),
         .package(url: "https://github.com/kean/Nuke", .exactItem("12.6.0")),
         .package(url: "https://github.com/AliSoftware/Reusable.git", .exactItem("4.1.2")),
         .package(url: "https://github.com/SnapKit/SnapKit", .exactItem("5.7.1")),

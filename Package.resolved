@@ -50,8 +50,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/kean/Nuke",
       "state" : {
-        "revision" : "29d3a7e0c687f97fe35b584f60b93fc547d3dade",
-        "version" : "12.1.5"
+        "revision" : "8e431251dea0081b6ab154dab61a6ec74e4b6577",
+        "version" : "12.6.0"
       }
     },
     {
@@ -122,8 +122,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/SnapKit/SnapKit",
       "state" : {
-        "revision" : "f222cbdf325885926566172f6f5f06af95473158",
-        "version" : "5.6.0"
+        "revision" : "2842e6e84e82eb9a8dac0100ca90d9444b0307f4",
+        "version" : "5.7.1"
       }
     },
     {
@@ -140,8 +140,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/camelan/stream-swift",
       "state" : {
-        "branch" : "develop",
-        "revision" : "6e7cb7419f1bdcdf7887f3bd791396825d1aad15"
+        "branch" : "feature/CM-6665/Reduce-getStream-API-calls",
+        "revision" : "da8c573e8036116b579b472ff05f7cc0c79ac010"
       }
     },
     {
