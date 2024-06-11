@@ -140,8 +140,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/camelan/stream-swift",
       "state" : {
-        "branch" : "feature/CM-6665/Reduce-getStream-API-calls",
-        "revision" : "da8c573e8036116b579b472ff05f7cc0c79ac010"
+        "revision" : "cab1b5d39ac90d985d79614f72b86604e66b0366",
+        "version" : "1.0.18"
       }
     },
     {
