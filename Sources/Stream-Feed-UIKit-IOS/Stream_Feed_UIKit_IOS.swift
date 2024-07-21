@@ -103,14 +103,15 @@ public struct StreamFeedUIKitIOS {
         return activityDetailTableViewController
     }
 
-    public static func setupStream(apiKey: String, appId: String, region: BaseURL.Location, logsEnabled: Bool = true) {
+    public static func setupStream(baseURL: URL, apiKey: String, appId: String, region: BaseURL.Location, logsEnabled: Bool = true) {
         if Client.shared.token.isEmpty {
             Client.shared = Client(apiKey: apiKey,
                                    appId: appId,
-                                   baseURL: BaseURL(location: region),
+                                   baseURL: BaseURL(customURL: baseURL),
                                    logsEnabled: logsEnabled)
         }
-        Client.config = .init(apiKey: apiKey, appId: appId, baseURL: BaseURL(location: region), logsEnabled: logsEnabled)
+        
+        Client.config = .init(apiKey: apiKey, appId: appId, baseURL: BaseURL(customURL: baseURL), logsEnabled: logsEnabled)
         UIFont.overrideInitialize()
         KingfisherManager.shared.downloader.downloadTimeout = 600
     }
