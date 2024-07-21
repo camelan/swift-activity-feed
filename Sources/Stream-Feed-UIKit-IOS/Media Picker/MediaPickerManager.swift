@@ -86,8 +86,10 @@ extension MediaPicker: PHPickerViewControllerDelegate {
                         self.delegate?.didSelect(mediaItems: mediaItems)
                     }
                     catch {
-                        self.logErrorAction?("[Media Picker] something went wrong when picked video item",
-                                             "error: \(error.localizedDescription)")
+                        if !(error is NSItemProviderError) {
+                            logErrorAction?("[Media Picker] something went wrong when picked video item",
+                                                 "error: \(error.localizedDescription)")
+                        }
                     }
                     dismiss(picker: picker)
                 }
@@ -103,8 +105,10 @@ extension MediaPicker: PHPickerViewControllerDelegate {
                             self.delegate?.didSelect(mediaItems: mediaItems)
                         }
                     } catch {
-                        self.logErrorAction?("[Media Picker] something went wrong when picked image item",
-                                             "error: \(error.localizedDescription)")
+                        if !(error is NSItemProviderError) {
+                            logErrorAction?("[Media Picker] something went wrong when picked image item",
+                                                 "error: \(error.localizedDescription)")
+                        }
                     }
                     
                     dismiss(picker: picker)
@@ -131,12 +135,17 @@ extension MediaPicker: PHPickerViewControllerDelegate {
     
     func getVideo(itemProvider: NSItemProvider, completion: @escaping ((Result<URL, NSItemProviderError>) -> Void)) {
         let movie = UTType.movie.identifier
-        itemProvider.loadFileRepresentation(forTypeIdentifier: movie) { videoURL, error in
+        itemProvider.loadFileRepresentation(forTypeIdentifier: movie) { [weak self] videoURL, error in
+            guard let self else { return }
             guard error == nil else {
+                logErrorAction?("[Item Provider] Couldn't get video from PHPicker item provider",
+                                     "error: \(error?.localizedDescription ?? "")")
                 completion(.failure(.failedToLoadObject(error!)))
                 return
             }
             guard let videoURL = videoURL else {
+                logErrorAction?("[Item Provider] Couldn't get video from videoURL",
+                                     "with type \(itemProvider.registeredTypeIdentifiers.joined(separator: ", "))")
                 completion(.failure(.couldnotLoadObject(itemProvider)))
                 return
             }
