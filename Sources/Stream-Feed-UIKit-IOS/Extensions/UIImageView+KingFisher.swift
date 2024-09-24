@@ -21,7 +21,6 @@ extension UIImageView {
         }
         var imageOptions: KingfisherOptionsInfo = [
             .scaleFactor(UIScreen.main.scale),
-            .transition(.fade(0.2)),
             .cacheOriginalImage,
             .alsoPrefetchToMemory
         ]
@@ -44,7 +43,6 @@ extension UIImageView {
         }
         var imageOptions: KingfisherOptionsInfo = [
             .scaleFactor(UIScreen.main.scale),
-            .transition(.fade(0.2)),
             .cacheOriginalImage,
             .alsoPrefetchToMemory
         ]
@@ -65,7 +63,6 @@ extension UIButton {
         
         var imageOptions: KingfisherOptionsInfo = [
             .scaleFactor(UIScreen.main.scale),
-            .transition(.fade(0.2)),
             .cacheOriginalImage,
             .alsoPrefetchToMemory
         ]
