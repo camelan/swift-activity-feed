@@ -31,7 +31,7 @@ open class FlatFeedViewController<T: ActivityProtocol>: BaseFlatFeedViewControll
     /// A block for the removing of an action.
     public var removeActivityAction: RemoveActivityAction?
 
-    let currentUser = Client.shared.currentUser as? User
+    let currentUser = Client.feedSharedClient.currentUser as? User
     public var isCurrentUser: Bool = false
     public var autoLikeEnabled: Bool = false
     public var timelineVideoEnabled: Bool = false
@@ -235,7 +235,7 @@ extension FlatFeedViewController {
 
     /// Subscribes for the realtime updates.
     open func subscribeForUpdates() {
-        subscriptionId = presenter?.subscriptionPresenter.subscribe { [weak self] in
+        subscriptionId = presenter?.subscriptionPresenter.subscribe(clientType: Client.feedSharedClient, { [weak self] in
             if let self = self, let response = try? $0.get() {
                 let newCount = response.newActivities.count
                 let deletedCount = response.deletedActivitiesIds.count
@@ -253,7 +253,7 @@ extension FlatFeedViewController {
                 self.onPostUpdate?()
 //                self.bannerView.show(text, in: self)
             }
-        }
+        })
     }
 
     /// Unsubscribes from the realtime updates.

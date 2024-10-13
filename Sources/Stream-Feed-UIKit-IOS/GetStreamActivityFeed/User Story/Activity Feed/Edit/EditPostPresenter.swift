@@ -71,7 +71,7 @@ public final class EditPostPresenter {
     }
 
     func save(_ text: String?, completion: @escaping (_ error: Error?) -> Void) async {
-        guard Client.shared.currentUser != nil else {
+        guard Client.feedSharedClient.currentUser != nil else {
             logErrorAction?("found nil user while posting new feed", "")
             completion(nil)
             return
@@ -139,7 +139,7 @@ public final class EditPostPresenter {
                                   fileUploadedCompletion: @escaping (() -> Void),
                                   fileUploadProgress: @escaping ((Double) -> Void)) async throws -> [URL] {
         return try await withCheckedThrowingContinuation { continuation in
-            uploadTask = Client.shared.upload(files: files,
+            uploadTask = Client.feedSharedClient.upload(files: files,
                                  completion: { result in
                 switch result {
                 case .success(let urls):
@@ -250,7 +250,7 @@ public final class EditPostPresenter {
     }
 
     private func saveActivity(text: String?, completion: @escaping (_ error: Error?) -> Void) {
-        guard let user = Client.shared.currentUser as? User , (text != nil || mediaItems.count > 0) else {
+        guard let user = Client.feedSharedClient.currentUser as? User , (text != nil || mediaItems.count > 0) else {
             completion(nil)
             return
         }

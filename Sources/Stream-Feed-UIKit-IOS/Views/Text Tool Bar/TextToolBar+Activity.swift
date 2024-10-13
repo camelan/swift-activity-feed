@@ -35,7 +35,7 @@ extension TextToolBar {
     
     private func addActivity(to flatFeed: FlatFeed, imageURLs: [URL], completion: @escaping ActivityCompletion<Activity>) {
         guard let user = User.current else {
-            if Client.shared.currentUser != nil {
+            if Client.feedSharedClient.currentUser != nil {
                 print("❌ The current user was not setupped with correct type. " +
                     "Did you setup `GetStream.User` and not `GetStreamActivityFeed.User`?")
             } else {

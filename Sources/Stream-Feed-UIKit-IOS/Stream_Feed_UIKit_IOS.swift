@@ -39,7 +39,7 @@ public struct StreamFeedUIKitIOS {
         timeLineVC.modalPresentationStyle = .fullScreen
         let nav = UINavigationController(rootViewController: timeLineVC)
         nav.modalPresentationStyle = .fullScreen
-        let flatFeed = Client.shared.flatFeed(feedSlug: feedSlug, userId: userId)
+        let flatFeed = Client.feedSharedClient.flatFeed(feedSlug: feedSlug, userId: userId)
         let presenter = FlatFeedPresenter<Activity>(flatFeed: flatFeed,
                                                     reactionTypes: [.likes, .comments], timelineVideoEnabled: timelineVideoEnabled)
 
@@ -57,9 +57,10 @@ public struct StreamFeedUIKitIOS {
                                       onPostComplete: @escaping (() -> Void),
                                       alertRequiredPermissions: @escaping (() -> Void),
                                       logErrorAction: @escaping ((String, String) -> Void)) -> EditPostViewController {
-        guard let userFeedId: FeedId = FeedId(feedSlug: "user") else { return EditPostViewController() }
+        guard let userFeedId: FeedId = FeedId(feedSlug: "user",
+                                              client: Client.feedSharedClient) else { return EditPostViewController() }
         let editPostViewController = EditPostViewController.fromBundledStoryboard()
-        editPostViewController.presenter = EditPostPresenter(flatFeed: Client.shared.flatFeed(userFeedId),
+        editPostViewController.presenter = EditPostPresenter(flatFeed: Client.feedSharedClient.flatFeed(userFeedId),
                                                              view: editPostViewController,
                                                              petId: petId,
                                                              imageCompression: imageCompression,
@@ -84,7 +85,7 @@ public struct StreamFeedUIKitIOS {
                                          logErrorAction: @escaping ((String, String) -> Void)) -> PostDetailTableViewController {
 
         let activityDetailTableViewController = PostDetailTableViewController()
-        guard let flatFeed = Client.shared.flatFeed(feedSlug: "user") else { return PostDetailTableViewController() }
+        guard let flatFeed = Client.feedSharedClient.flatFeed(feedSlug: "user") else { return PostDetailTableViewController() }
         let flatFeedPresenter = FlatFeedPresenter<Activity>(flatFeed: flatFeed,
                                                             reactionTypes: [.comments, .likes])
 
@@ -103,30 +104,47 @@ public struct StreamFeedUIKitIOS {
         return activityDetailTableViewController
     }
 
-    public static func setupStream(baseURL: URL, apiKey: String, appId: String, region: BaseURL.Location, logsEnabled: Bool = true) {
-        if Client.shared.token.isEmpty {
-            Client.shared = Client(apiKey: apiKey,
+    public static func setupFeedStream(baseURL: URL, apiKey: String, appId: String, region: BaseURL.Location, logsEnabled: Bool = true) {
+        if Client.feedSharedClient.token.isEmpty {
+            Client.feedSharedClient = Client(apiKey: apiKey,
                                    appId: appId,
                                    baseURL: BaseURL(customURL: baseURL),
                                    logsEnabled: logsEnabled)
         }
         
-        Client.config = .init(apiKey: apiKey, appId: appId, baseURL: BaseURL(customURL: baseURL), logsEnabled: logsEnabled)
+        Client.feedConfig = .init(apiKey: apiKey, appId: appId, baseURL: BaseURL(customURL: baseURL), logsEnabled: logsEnabled)
+        UIFont.overrideInitialize()
+        KingfisherManager.shared.downloader.downloadTimeout = 600
+    }
+    
+    public static func setupNotificationStream(baseURL: URL, apiKey: String, appId: String, region: BaseURL.Location, logsEnabled: Bool = true) {
+        if Client.notificationSharedClient.token.isEmpty {
+            Client.notificationSharedClient = Client(apiKey: apiKey,
+                                   appId: appId,
+                                   baseURL: BaseURL(customURL: baseURL),
+                                   logsEnabled: logsEnabled)
+        }
+        
+        Client.notificationConfig = .init(apiKey: apiKey, appId: appId, baseURL: BaseURL(customURL: baseURL), logsEnabled: logsEnabled)
         UIFont.overrideInitialize()
         KingfisherManager.shared.downloader.downloadTimeout = 600
     }
 
 
     public static func logOut() {
-        Client.shared = Client(apiKey: "", appId: "")
-        Client.shared.currentUser = nil
-        Client.shared.currentUserId = nil
-        Client.shared.token = ""
+        Client.feedSharedClient = Client(apiKey: "", appId: "")
+        Client.notificationSharedClient = Client(apiKey: "", appId: "")
+        Client.feedSharedClient.currentUser = nil
+        Client.notificationSharedClient.currentUser = nil
+        Client.feedSharedClient.currentUserId = nil
+        Client.notificationSharedClient.currentUserId = nil
+        Client.feedSharedClient.token = ""
+        Client.notificationSharedClient.token = ""
     }
 
     public static func createUser(userId: String, displayName: String, profileImage: String, completion: @escaping ((Error?) -> Void)) {
         let customUser = User(name: displayName, id: userId, profileImage: profileImage)
-        Client.shared.create(user: customUser, getOrCreate: true) { result in
+        Client.feedSharedClient.create(user: customUser, getOrCreate: true) { result in
             do {
                 let retrivedUser = try result.get()
                 completion(nil)
@@ -140,10 +158,10 @@ public struct StreamFeedUIKitIOS {
 
     public static func updateUser(userId: String, displayName: String, profileImage: String, completion: @escaping ((Error?) -> Void)) {
         let customUser = User(name: displayName, id: userId, profileImage: profileImage)
-        Client.shared.update(user: customUser) { result in
+        Client.feedSharedClient.update(user: customUser) { result in
             do {
                 let retrivedUser = try result.get()
-                var currentUser = Client.shared.currentUser as? User
+                var currentUser = Client.feedSharedClient.currentUser as? User
                 if !profileImage.isEmpty {
                     currentUser?.avatarURL = URL(string: profileImage)!
                 }
@@ -158,12 +176,33 @@ public struct StreamFeedUIKitIOS {
         }
     }
 
-    public static func registerUser(withToken token: String, userId: String, displayName: String, profileImage: String, completion: @escaping ((Error?) -> Void)) {
+    public static func registerFeedUser(withToken token: String,
+                                        userId: String,
+                                        displayName: String,
+                                        profileImage: String,
+                                        completion: @escaping ((Error?) -> Void)) {
         let customUser = User(name: displayName, id: userId, profileImage: profileImage)
-        Client.shared.setupUser(customUser, token: token) { result in
+        Client.feedSharedClient.setupUser(customUser, token: token) { result in
             do {
                 let retrivedUser = try result.get()
-                let currentUser = Client.shared.currentUser as? User
+                let currentUser = Client.feedSharedClient.currentUser as? User
+                if !profileImage.isEmpty {
+                    currentUser?.avatarURL = URL(string: profileImage)!
+                }
+                completion(nil)
+            }
+            catch {
+                completion(error)
+            }
+        }
+    }
+    
+    public static func registerNotificationUser(withToken token: String, userId: String, displayName: String, profileImage: String, completion: @escaping ((Error?) -> Void)) {
+        let customUser = User(name: displayName, id: userId, profileImage: profileImage)
+        Client.notificationSharedClient.setupUser(customUser, token: token) { result in
+            do {
+                let retrivedUser = try result.get()
+                let currentUser = Client.notificationSharedClient.currentUser as? User
                 if !profileImage.isEmpty {
                     currentUser?.avatarURL = URL(string: profileImage)!
                 }
@@ -187,7 +226,7 @@ extension StreamFeedUIKitIOS {
         let flatFeed = FlatFeed(feedID)
         StreamFeedUIKitIOS.flatFeedPresenter = FlatFeedPresenter<Activity>(flatFeed: flatFeed, reactionTypes: [.comments, .likes])
 
-        StreamFeedUIKitIOS.subscriptionId = StreamFeedUIKitIOS.flatFeedPresenter?.subscriptionPresenter.subscribe({ result in
+        StreamFeedUIKitIOS.subscriptionId = StreamFeedUIKitIOS.flatFeedPresenter?.subscriptionPresenter.subscribe(clientType: Client.feedSharedClient, { result in
             onFeedsUpdate(result)
         }, logErrorAction: logErrorAction)
 
@@ -221,7 +260,7 @@ extension StreamFeedUIKitIOS {
         let notificationFeed = NotificationFeed(feedID)
         StreamFeedUIKitIOS.notificationFeedPresenter = NotificationsPresenter<EnrichedActivity<User, String, DefaultReaction>>(notificationFeed)
         
-        StreamFeedUIKitIOS.notificationSubscriptionId = StreamFeedUIKitIOS.notificationFeedPresenter?.subscriptionPresenter.subscribe({ result in
+        StreamFeedUIKitIOS.notificationSubscriptionId = StreamFeedUIKitIOS.notificationFeedPresenter?.subscriptionPresenter.subscribe(clientType: Client.notificationSharedClient, { result in
             do {
                 let response = try result.get()
                 let newActivites = response.newActivities

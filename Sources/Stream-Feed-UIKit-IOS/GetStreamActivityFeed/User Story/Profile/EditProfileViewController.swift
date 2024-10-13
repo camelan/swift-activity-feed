@@ -71,7 +71,7 @@ final class EditProfileViewController: UIViewController, BundledStoryboardLoadab
             return
         }
         
-        Client.shared.update(user: user) { [weak self] result in
+        Client.feedSharedClient.update(user: user) { [weak self] result in
             guard let self = self else {
                 return
             }

@@ -41,7 +41,7 @@ extension ReactionPaginator {
     
     /// Load reactions with a given pagination options.
     public func load(_ pagination: Pagination = .none, completion: @escaping Completion) {
-        Client.shared.reactions(forActivityId: activityId,
+        Client.feedSharedClient.reactions(forActivityId: activityId,
                                 kindOf: reactionKind,
                                 extraDataTypeOf: T.self,
                                 userTypeOf: U.self,

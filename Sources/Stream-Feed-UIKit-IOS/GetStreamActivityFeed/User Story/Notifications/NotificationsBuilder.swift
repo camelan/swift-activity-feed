@@ -18,7 +18,7 @@ final class NotificationsBuilder {
                                                                                 bundle: Bundle.main)
         
         if let notificationsViewController = navigationController.viewControllers.first as? NotificationsViewController,
-            let userId = Client.shared.currentUserId {
+            let userId = Client.notificationSharedClient.currentUserId {
             let notificationFeed = NotificationFeed(FeedId(feedSlug: feedSlug, userId: userId))
             notificationsViewController.presenter = NotificationsPresenter(notificationFeed)
         }
