@@ -67,7 +67,7 @@ extension OpenGraphWorker {
     }
     
     private func parse(_ url: URL) {
-        Client.shared.og(url: url) { [weak self] result in
+        Client.feedSharedClient.og(url: url) { [weak self] result in
             self?.callbackQueue.async {
                 guard let self = self else {
                     return

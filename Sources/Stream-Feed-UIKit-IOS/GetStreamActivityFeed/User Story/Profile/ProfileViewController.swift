@@ -35,7 +35,7 @@ class ProfileViewController: UIViewController, BundledStoryboardLoadable {
     
     var user: User? {
         didSet {
-            if let user = user, let currentUser = Client.shared.currentUser {
+            if let user = user, let currentUser = Client.feedSharedClient.currentUser {
                 isCurrentUser = user.id == currentUser.id
             }
         }
