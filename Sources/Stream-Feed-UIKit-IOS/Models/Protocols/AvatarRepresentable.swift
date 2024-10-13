@@ -57,7 +57,7 @@ extension AvatarRepresentable {
             return
         }
         
-        Client.shared.upload(image: file) { [weak self] result in
+        Client.feedSharedClient.upload(image: file) { [weak self] result in
             guard let self = self else {
                 completion(nil)
                 return

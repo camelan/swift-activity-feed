@@ -33,11 +33,11 @@ final class NotificationsViewController: UITableViewController, BundledStoryboar
             if let presenter = presenter {
                 load()
                 
-                subscriptionId = presenter.subscriptionPresenter.subscribe { [weak self] in
+                subscriptionId = presenter.subscriptionPresenter.subscribe(clientType: Client.notificationSharedClient, { [weak self] in
                     if let self = self, let response = try? $0.get() {
                         self.badgeValue += response.newActivities.count
                     }
-                }
+                })
             }
         }
     }

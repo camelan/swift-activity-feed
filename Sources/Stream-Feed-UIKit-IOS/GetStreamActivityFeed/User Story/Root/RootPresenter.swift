@@ -18,7 +18,7 @@ final class RootPresenter {
     }
     
     func setup() {
-        guard Client.shared.isValid else {
+        guard Client.feedSharedClient.isValid else {
             router.showClientInfo()
             return
         }
@@ -28,11 +28,11 @@ final class RootPresenter {
             return
         }
         
-        guard let currentUserId = Client.shared.currentUserId else {
+        guard let currentUserId = Client.feedSharedClient.currentUserId else {
             return
         }
         
-        Client.shared.update(user: User(name: "", id: currentUserId)) { [weak self] result in
+        Client.feedSharedClient.update(user: User(name: "", id: currentUserId)) { [weak self] result in
             if let error = result.error {
                 self?.router.showClientInfo(error.localizedDescription)
             } else {

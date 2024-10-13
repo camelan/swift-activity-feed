@@ -68,7 +68,7 @@ open class DetailViewController<T: ActivityProtocol>: BaseFlatFeedViewController
     /// Show the section title even if it's empty.
     public var showZeroSectionTitle = true
 
-    let currentUser = Client.shared.currentUser as? User
+    let currentUser = Client.feedSharedClient.currentUser as? User
     public var reportUserAction: ((String, String) -> Void)?
     public var navigateToUserProfileAction: ((String) -> Void)?
     public var shareTimeLinePostAction: ((String?) -> Void)?
@@ -105,7 +105,7 @@ open class DetailViewController<T: ActivityProtocol>: BaseFlatFeedViewController
                 if let user = User.current {
                     self.setupCommentTextField(avatarURL: user.avatarURL)
                 } else {
-                    if Client.shared.currentUser != nil {
+                    if Client.feedSharedClient.currentUser != nil {
                         print("❌ The current user was not setupped with correct type. " +
                             "Did you setup `GetStream.User` and not `GetStreamActivityFeed.User`?")
                     } else {
@@ -257,13 +257,14 @@ open class DetailViewController<T: ActivityProtocol>: BaseFlatFeedViewController
     }
 
     private func navigateToPostDetails(with activity: Activity) {
-        guard let userFeedId: FeedId = FeedId(feedSlug: "user") else { return }
+        guard let userFeedId: FeedId = FeedId(feedSlug: "user",
+                                              client: Client.feedSharedClient) else { return }
         let imageCompression: Double = 0.5
         let videoMaximumDurationInMinutes: Double = 2.0
         let videoCompression: Int = 100
         let timeLineVideoEnabled: Bool = false
         let editPostViewController = EditPostViewController.fromBundledStoryboard()
-        editPostViewController.presenter = EditPostPresenter(flatFeed: Client.shared.flatFeed(userFeedId),
+        editPostViewController.presenter = EditPostPresenter(flatFeed: Client.feedSharedClient.flatFeed(userFeedId),
                                                              view: editPostViewController,
                                                              activity: activity,
                                                              petId: nil,
@@ -707,7 +708,7 @@ extension DetailViewController {
     private func loadActivityByID() {
         guard let activityId = activityId, let currentUserId = currentUserId else { return }
         refreshControl.beginRefreshing()
-        Client.shared.get(typeOf: Activity.self, activityIds: [activityId]) { [weak self] result in
+        Client.feedSharedClient.get(typeOf: Activity.self, activityIds: [activityId]) { [weak self] result in
             guard let self else { return }
             do {
                 let response = try result.get()

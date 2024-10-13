@@ -29,7 +29,7 @@ public final class User: GetStream.User, UserNameRepresentable, AvatarRepresenta
     }
     
     private let dispatchQueue = DispatchQueue(label: "io.getstream.User")
-    private(set) lazy var feed: FlatFeed = Client.shared.flatFeed(FeedId.user(with: id))
+    private(set) lazy var feed: FlatFeed = Client.feedSharedClient.flatFeed(FeedId.user(with: id))
     
     public var avatarImage: UIImage?
     
@@ -82,7 +82,7 @@ public final class User: GetStream.User, UserNameRepresentable, AvatarRepresenta
 extension User {
     /// Reloads the user data and returns in a completion block.
     public func refresh(completion: @escaping (_ user: User?) -> Void) {
-        Client.shared.get(typeOf: User.self, userId: id, withFollowCounts: true) { result in
+        Client.feedSharedClient.get(typeOf: User.self, userId: id, withFollowCounts: true) { result in
             completion(try? result.get())
         }
     }
