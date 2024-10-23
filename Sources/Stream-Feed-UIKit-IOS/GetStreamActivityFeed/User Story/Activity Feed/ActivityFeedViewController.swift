@@ -109,7 +109,7 @@ public final class ActivityFeedViewController: FlatFeedViewController<Activity>,
             let userFeedId = FeedId.user,
             let activity = sender as? Activity {
             let editPostViewController = segue.destination as! EditPostViewController
-            editPostViewController.presenter = EditPostPresenter(flatFeed: Client.shared.flatFeed(userFeedId),
+            editPostViewController.presenter = EditPostPresenter(flatFeed: Client.feedSharedClient.flatFeed(userFeedId),
                                                                  view: editPostViewController,
                                                                  activity: activity,
                                                                  petId: nil,

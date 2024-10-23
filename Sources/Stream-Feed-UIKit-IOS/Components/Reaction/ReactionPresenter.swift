@@ -21,7 +21,7 @@ open class ReactionPresenter: ReactionPresenterProtocol {
                          extraData: E,
                          userTypeOf userType: U.Type,
                          _ completion: @escaping Completion<T>) where T.ReactionType == GetStream.Reaction<E, U> {
-        Client.shared.add(reactionTo: activity.id,
+        Client.feedSharedClient.add(reactionTo: activity.id,
                           parentReactionId: parentReaction?.id,
                           kindOf: kind,
                           extraData: extraData,
@@ -39,7 +39,7 @@ open class ReactionPresenter: ReactionPresenterProtocol {
                          extraData: E,
                          userTypeOf userType: U.Type,
                          _ completion: @escaping Completion<T>) where T.ReactionType == GetStream.Reaction<E, U> {
-        Client.shared.add(reactionTo: activity.id,
+        Client.feedSharedClient.add(reactionTo: activity.id,
                           parentReactionId: parentReaction?.id,
                           kindOf: .comment,
                           extraData: extraData,
@@ -75,7 +75,7 @@ open class ReactionPresenter: ReactionPresenterProtocol {
     /// Remove a reaction from an activity.
     public func remove<T: ActivityProtocol>(reaction: T.ReactionType, activity: T, _ completion: @escaping Completion<T>)
         where T.ReactionType: ReactionProtocol {
-            Client.shared.delete(reactionId: reaction.id) {
+            Client.feedSharedClient.delete(reactionId: reaction.id) {
                 if let error = $0.error {
                     if let clientError = error as? ClientError {
                         completion(.failure(clientError))
@@ -94,7 +94,7 @@ open class ReactionPresenter: ReactionPresenterProtocol {
     public func remove<T: ReactionProtocol>(reaction: T,
                                             parentReaction: T,
                                             _ completion: @escaping (_ result: Result<T, ClientError>) -> Void) {
-        Client.shared.delete(reactionId: reaction.id) {
+        Client.feedSharedClient.delete(reactionId: reaction.id) {
             if let error = $0.error {
                 if let clientError = error as? ClientError {
                     completion(.failure(clientError))
