@@ -140,8 +140,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/camelan/stream-swift",
       "state" : {
-        "branch" : "release-2-8-41-13-10-2024",
-        "revision" : "44f6d36777224a17d343b85f07b4622281184f43"
+        "revision" : "b68ea2ead088906853cdd82965c94bc6c93a5978",
+        "version" : "1.0.19"
       }
     },
     {
