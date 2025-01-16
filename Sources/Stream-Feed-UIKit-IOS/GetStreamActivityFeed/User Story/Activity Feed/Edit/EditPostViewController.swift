@@ -255,14 +255,16 @@ public final class EditPostViewController: UIViewController, BundledStoryboardLo
                     guard let self = self else {
                         return
                     }
-                    
-                    self.activityIndicator.stopAnimating()
-                    
-                    if let error = error {
-                        // self.showErrorAlert(error)
-                    } else {
-                        self.onPostComplete?()
-                        backBtnPressed(UIBarButtonItem())
+                    DispatchQueue.mainAsyncIfNeeded { [weak self] in
+                        guard let self else { return }
+                        self.activityIndicator.stopAnimating()
+                        
+                        if let error = error {
+                            // self.showErrorAlert(error)
+                        } else {
+                            self.onPostComplete?()
+                            backBtnPressed(UIBarButtonItem())
+                        }
                     }
                 }
             }
