@@ -15,7 +15,7 @@ extension Date {
         let timeInterval = -self.timeIntervalSinceNow
         
         if timeInterval < 43_200 {
-            return DateFormatter.time.string(from: self)
+            return "Today, \(DateFormatter.time.string(from: self))"
         } else if timeInterval < 129_600 {
             return "Yesterday, \(DateFormatter.time.string(from: self))"
         } else if timeInterval < 518_400 {

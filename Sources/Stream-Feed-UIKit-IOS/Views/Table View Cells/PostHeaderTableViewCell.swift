@@ -167,6 +167,7 @@ extension PostHeaderTableViewCell {
         let originalActivity = originalActivity ?? activity
         let activity = originalActivity as! Activity
         nameLabel.text = originalActivity.actor.name
+        dateLabel.text = activity.time?.relative
         
         if let textRepresentable = originalActivity as? TextRepresentable {
             messageLabel.text = textRepresentable.text
@@ -194,8 +195,6 @@ extension PostHeaderTableViewCell {
                 return
             }
         }
-        
-        dateLabel.text = activity.time?.relative
         
         if activity.verb == .repost {
             repost = "reposted by \(activity.actor.name)"
